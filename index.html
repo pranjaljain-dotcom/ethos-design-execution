@@ -618,10 +618,11 @@ const screens = {
   // S3 — D1 Modal Step 2: Amount + Fee Review
   s3: {
     title: 'S3 — D1 Modal Step 2: Amount + Fee Review',
-    states: ['default','card declined','processing'],
+    states: ['cc — default','cc — card declined','cc — processing','ach'],
     render(state) {
-      const isDeclined = state === 'card declined';
-      const isProcessing = state === 'processing';
+      const isACH = state === 'ach';
+      const isDeclined = state === 'cc — card declined';
+      const isProcessing = state === 'cc — processing';
       return `
       <div class="portal-topbar"><div class="env-banner">Staging environment <button>Go to PROD</button></div><div class="avatar">P</div></div>
       <div class="portal-page" style="position:relative">
@@ -639,7 +640,7 @@ const screens = {
             </div>
             <div class="step-dots"><div class="step-dot"></div><div class="step-dot active"></div></div>
             <div class="modal-body">
-              ${isDeclined ? `<div class="alert alert-error"><div class="alert-icon">❌</div><div class="alert-text"><strong>Payment failed</strong>Your card was declined. Check your card details or try a different payment method.</div></div>` : ''}
+              ${isDeclined ? `<div class="alert alert-error"><div class="alert-icon">❌</div><div class="alert-text"><strong>Payment failed</strong> Your card was declined. Check your card details or try a different payment method.</div></div>` : ''}
 
               <div class="form-group">
                 <div class="form-label">Payment amount</div>
@@ -648,25 +649,20 @@ const screens = {
               </div>
 
               <div class="fee-breakdown">
-                <div class="fee-row">
-                  <span>Debt payment</span>
-                  <span>$480.00</span>
-                </div>
-                <div class="fee-row">
-                  <span>Processing fee <span class="fee-label-tag">Credit card</span></span>
-                  <span>$11.33</span>
-                </div>
-                <div class="fee-row total">
-                  <span>Total charged to card</span>
-                  <span>$491.33</span>
-                </div>
+                <div class="fee-row"><span>Debt payment</span><span>$480.00</span></div>
+                ${isACH
+                  ? `<div class="fee-row"><span style="color:var(--utility-success-cypress-100)">Processing fee</span><span style="color:var(--utility-success-cypress-100)">$0.00 — ACH</span></div>
+                     <div class="fee-row total"><span>Total charged to bank</span><span>$480.00</span></div>`
+                  : `<div class="fee-row"><span>Processing fee <span class="fee-label-tag">Credit card</span></span><span>$11.33</span></div>
+                     <div class="fee-row total"><span>Total charged to card</span><span>$491.33</span></div>`
+                }
               </div>
 
-              <div class="text-sm text-muted">Visa ending in 4242 · Debt reduced to $0 after payment</div>
+              <div class="text-sm text-muted">${isACH ? '••••••••1234 Checking · No processing fee · Debt reduced to $0 after payment' : 'Visa ending in 4242 · Debt reduced to $0 after payment'}</div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-secondary btn-full" onclick="showScreen('s2','cc')">← Back</button>
-              <button class="btn btn-primary btn-full ${isProcessing ? 'btn-loading' : ''}" onclick="${isProcessing ? '' : "showScreen('s4','default')"}">
+              <button class="btn btn-secondary btn-full" onclick="showScreen('s2','${isACH ? 'ach' : 'cc'}')">← Back</button>
+              <button class="btn btn-primary btn-full ${isProcessing ? 'btn-loading' : ''}" onclick="${isProcessing ? '' : `showScreen('s4','${isACH ? 'ach' : 'cc'}')`}">
                 ${isProcessing ? `<div class="spinner"></div> Processing…` : 'Confirm payment'}
               </button>
             </div>
@@ -679,8 +675,9 @@ const screens = {
   // S4 — D1 Modal Success
   s4: {
     title: 'S4 — D1 Modal Success',
-    states: ['default'],
+    states: ['cc','ach'],
     render(state) {
+      const isACH = state === 'ach';
       return `
       <div class="portal-topbar"><div class="env-banner">Staging environment <button>Go to PROD</button></div><div class="avatar">P</div></div>
       <div class="portal-page" style="position:relative">
@@ -696,10 +693,14 @@ const screens = {
                 <div class="success-sub">Your debt payment has been processed. Your balance has been updated.</div>
                 <div class="receipt-box">
                   <div class="receipt-row"><span>Amount paid</span><span>$480.00</span></div>
-                  <div class="receipt-row"><span>Processing fee</span><span>$11.33</span></div>
-                  <div class="receipt-row total"><span>Total charged</span><span>$491.33</span></div>
+                  ${isACH
+                    ? ''
+                    : `<div class="receipt-row"><span>Processing fee</span><span>$11.33</span></div>
+                       <div class="receipt-row total"><span>Total charged</span><span>$491.33</span></div>`
+                  }
+                  ${isACH ? `<div class="receipt-row total"><span>Total charged</span><span>$480.00</span></div>` : ''}
                   <div class="divider" style="margin-top:4px"></div>
-                  <div class="receipt-row"><span>Method</span><span>Visa ••••4242</span></div>
+                  <div class="receipt-row"><span>Method</span><span>${isACH ? '••••••••1234 Checking' : 'Visa ••••4242'}</span></div>
                   <div class="receipt-row"><span>Date</span><span>Mar 24, 2026</span></div>
                   <div class="receipt-row"><span>Remaining debt</span><span style="color:var(--utility-success-cypress-100);font-weight:700">$0.00</span></div>
                 </div>
@@ -860,10 +861,11 @@ const screens = {
   // S7 — D2 Step 3: Fee Review
   s7: {
     title: 'S7 — D2 Step 3: Fee Review',
-    states: ['default','processing','card declined'],
+    states: ['cc — default','cc — processing','cc — card declined','ach'],
     render(state) {
-      const isProcessing = state === 'processing';
-      const isDeclined = state === 'card declined';
+      const isACH = state === 'ach';
+      const isProcessing = state === 'cc — processing';
+      const isDeclined = state === 'cc — card declined';
       return `
       <div class="stepper-page">
         <div class="stepper-back"><a href="#" onclick="showScreen('s1','default');return false">← Back to Earnings</a></div>
@@ -880,25 +882,32 @@ const screens = {
           <div class="stepper-content">
             <h2>Review your payment</h2>
             <p class="step-desc">Confirm the details below before completing your payment.</p>
-            ${isDeclined ? `<div class="alert alert-error" style="margin-bottom:var(--spacing-lg)"><div class="alert-icon">❌</div><div class="alert-text"><strong>Payment failed</strong>Your card was declined. Go back to try a different card or switch to ACH.</div></div>` : ''}
+            ${isDeclined ? `<div class="alert alert-error" style="margin-bottom:var(--spacing-lg)"><div class="alert-icon">❌</div><div class="alert-text"><strong>Payment failed</strong> Your card was declined. Go back to try a different card or switch to ACH.</div></div>` : ''}
             <div class="stepper-card" style="display:flex;flex-direction:column;gap:var(--spacing-xl)">
               <div>
                 <div class="form-label" style="margin-bottom:var(--spacing-md)">Payment summary</div>
                 <div class="fee-breakdown">
                   <div class="fee-row"><span>Debt payment</span><span>$480.00</span></div>
-                  <div class="fee-row"><span>Processing fee <span class="fee-label-tag">Credit card</span></span><span>$11.33</span></div>
-                  <div class="fee-row total"><span>Total charged to card</span><span>$491.33</span></div>
+                  ${isACH
+                    ? `<div class="fee-row"><span style="color:var(--utility-success-cypress-100)">Processing fee</span><span style="color:var(--utility-success-cypress-100)">$0.00 — ACH</span></div>
+                       <div class="fee-row total"><span>Total charged to bank</span><span>$480.00</span></div>`
+                    : `<div class="fee-row"><span>Processing fee <span class="fee-label-tag">Credit card</span></span><span>$11.33</span></div>
+                       <div class="fee-row total"><span>Total charged to card</span><span>$491.33</span></div>`
+                  }
                 </div>
               </div>
               <div>
                 <div class="form-label" style="margin-bottom:var(--spacing-md)">Payment method</div>
-                <div class="stripe-field"><span>Visa ending in 4242</span></div>
+                <div class="stripe-field"><span>${isACH ? '••••••••1234 Checking' : 'Visa ending in 4242'}</span></div>
               </div>
-              <div class="text-sm text-muted" style="line-height:1.6">Your outstanding debt of <strong>$480.00</strong> will be cleared after this payment. The processing fee of $11.33 is separate and does not reduce your debt balance.</div>
+              <div class="text-sm text-muted" style="line-height:1.6">${isACH
+                ? 'Your outstanding debt of <strong>$480.00</strong> will be cleared after this payment. No processing fee applies to ACH payments.'
+                : 'Your outstanding debt of <strong>$480.00</strong> will be cleared after this payment. The processing fee of $11.33 is separate and does not reduce your debt balance.'
+              }</div>
             </div>
             <div class="stepper-nav">
-              <button class="btn btn-secondary" onclick="showScreen('s6','cc')">← Back</button>
-              <button class="btn btn-primary ${isProcessing ? 'btn-loading' : ''}" onclick="${isProcessing ? '' : "showScreen('s8','default')"}">
+              <button class="btn btn-secondary" onclick="showScreen('s6','${isACH ? 'ach' : 'cc'}')">← Back</button>
+              <button class="btn btn-primary ${isProcessing ? 'btn-loading' : ''}" onclick="${isProcessing ? '' : `showScreen('s8','${isACH ? 'ach' : 'cc'}')`}">
                 ${isProcessing ? `<div class="spinner"></div> Processing…` : 'Confirm payment →'}
               </button>
             </div>
@@ -911,8 +920,9 @@ const screens = {
   // S8 — D2 Step 4: Confirmation
   s8: {
     title: 'S8 — D2 Step 4: Confirmation',
-    states: ['default'],
+    states: ['cc','ach'],
     render(state) {
+      const isACH = state === 'ach';
       return `
       <div class="stepper-page">
         <div class="stepper-back"><a href="#" onclick="showScreen('s1','default');return false">← Back to Earnings</a></div>
@@ -934,10 +944,13 @@ const screens = {
                 <div class="success-sub">Your debt payment has been processed successfully. Your debt balance is now $0.00.</div>
                 <div class="receipt-box">
                   <div class="receipt-row"><span>Amount paid</span><span>$480.00</span></div>
-                  <div class="receipt-row"><span>Processing fee</span><span>$11.33</span></div>
-                  <div class="receipt-row total"><span>Total charged</span><span>$491.33</span></div>
+                  ${isACH
+                    ? `<div class="receipt-row total"><span>Total charged</span><span>$480.00</span></div>`
+                    : `<div class="receipt-row"><span>Processing fee</span><span>$11.33</span></div>
+                       <div class="receipt-row total"><span>Total charged</span><span>$491.33</span></div>`
+                  }
                   <div class="divider" style="margin-top:4px"></div>
-                  <div class="receipt-row"><span>Method</span><span>Visa ••••4242</span></div>
+                  <div class="receipt-row"><span>Method</span><span>${isACH ? '••••••••1234 Checking' : 'Visa ••••4242'}</span></div>
                   <div class="receipt-row"><span>Date</span><span>Mar 24, 2026</span></div>
                   <div class="receipt-row"><span>Remaining balance</span><span style="color:var(--utility-success-cypress-100);font-weight:700">$0.00</span></div>
                 </div>
@@ -1042,10 +1055,11 @@ const screens = {
   // S10 — Pay installment: Step 2 — Fee Review + Confirm
   s10: {
     title: 'S10 — Pay Installment: Step 2 — Fee Review + Confirm',
-    states: ['default','processing','card declined'],
+    states: ['cc — default','cc — processing','cc — card declined','ach'],
     render(state) {
-      const isProcessing = state === 'processing';
-      const isDeclined   = state === 'card declined';
+      const isACH = state === 'ach';
+      const isProcessing = state === 'cc — processing';
+      const isDeclined   = state === 'cc — card declined';
       return `
       <div class="portal-topbar"><div class="env-banner">Staging environment <button>Go to PROD</button></div><div class="avatar">P</div></div>
       <div class="portal-page" style="position:relative">
@@ -1067,21 +1081,28 @@ const screens = {
 
               <div class="fee-breakdown">
                 <div class="fee-row"><span>Installment amount</span><span>$800.00</span></div>
-                <div class="fee-row"><span>Processing fee <span class="fee-label-tag">Credit card</span></span><span>$18.88</span></div>
-                <div class="fee-row total"><span>Total charged to card</span><span>$818.88</span></div>
+                ${isACH
+                  ? `<div class="fee-row"><span style="color:var(--utility-success-cypress-100)">Processing fee</span><span style="color:var(--utility-success-cypress-100)">$0.00 — ACH</span></div>
+                     <div class="fee-row total"><span>Total charged to bank</span><span>$800.00</span></div>`
+                  : `<div class="fee-row"><span>Processing fee <span class="fee-label-tag">Credit card</span></span><span>$18.88</span></div>
+                     <div class="fee-row total"><span>Total charged to card</span><span>$818.88</span></div>`
+                }
               </div>
 
               <div style="background:var(--neutrals-night-5);border-radius:var(--radii-2);padding:var(--spacing-lg);display:flex;flex-direction:column;gap:8px">
-                <div class="receipt-row"><span style="color:var(--neutrals-night-60)">Method</span><span>Visa ••••4242</span></div>
+                <div class="receipt-row"><span style="color:var(--neutrals-night-60)">Method</span><span>${isACH ? '••••••••1234 Checking' : 'Visa ••••4242'}</span></div>
                 <div class="receipt-row"><span style="color:var(--neutrals-night-60)">Remaining after payment</span><span style="color:var(--utility-error-carmine-red-100);font-weight:600">($4,000)</span></div>
                 <div class="receipt-row"><span style="color:var(--neutrals-night-60)">Next installment due</span><span>Oct 31, 2026</span></div>
               </div>
 
-              <div class="text-sm text-muted" style="line-height:1.6">The processing fee of $18.88 does not count toward your debt balance. Your debt reduces by <strong>$800.00</strong> only.</div>
+              <div class="text-sm text-muted" style="line-height:1.6">${isACH
+                ? 'No processing fee applies to ACH payments. Your debt reduces by <strong>$800.00</strong>.'
+                : 'The processing fee of $18.88 does not count toward your debt balance. Your debt reduces by <strong>$800.00</strong> only.'
+              }</div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-secondary btn-full" onclick="showScreen('s9','cc')">← Back</button>
-              <button class="btn btn-primary btn-full ${isProcessing ? 'btn-loading' : ''}" onclick="${isProcessing ? '' : "showScreen('s11','default')"}">
+              <button class="btn btn-secondary btn-full" onclick="showScreen('s9','${isACH ? 'ach' : 'cc'}')">← Back</button>
+              <button class="btn btn-primary btn-full ${isProcessing ? 'btn-loading' : ''}" onclick="${isProcessing ? '' : `showScreen('s11','${isACH ? 'ach' : 'cc'}')`}">
                 ${isProcessing ? `<div class="spinner"></div> Processing…` : 'Confirm payment'}
               </button>
             </div>
@@ -1094,8 +1115,9 @@ const screens = {
   // S11 — Pay installment: Success
   s11: {
     title: 'S11 — Pay Installment: Success',
-    states: ['default'],
+    states: ['cc','ach'],
     render(state) {
+      const isACH = state === 'ach';
       return `
       <div class="portal-topbar"><div class="env-banner">Staging environment <button>Go to PROD</button></div><div class="avatar">P</div></div>
       <div class="portal-page" style="position:relative">
@@ -1111,10 +1133,13 @@ const screens = {
                 <div class="success-sub">Your installment payment has been processed. Your plan is up to date.</div>
                 <div class="receipt-box">
                   <div class="receipt-row"><span>Installment paid</span><span>$800.00</span></div>
-                  <div class="receipt-row"><span>Processing fee</span><span>$18.88</span></div>
-                  <div class="receipt-row total"><span>Total charged</span><span>$818.88</span></div>
+                  ${isACH
+                    ? `<div class="receipt-row total"><span>Total charged</span><span>$800.00</span></div>`
+                    : `<div class="receipt-row"><span>Processing fee</span><span>$18.88</span></div>
+                       <div class="receipt-row total"><span>Total charged</span><span>$818.88</span></div>`
+                  }
                   <div class="divider" style="margin-top:4px"></div>
-                  <div class="receipt-row"><span>Method</span><span>Visa ••••4242</span></div>
+                  <div class="receipt-row"><span>Method</span><span>${isACH ? '••••••••1234 Checking' : 'Visa ••••4242'}</span></div>
                   <div class="receipt-row"><span>Date</span><span>Mar 24, 2026</span></div>
                   <div class="receipt-row"><span>Remaining debt</span><span style="color:var(--utility-error-carmine-red-100);font-weight:700">($4,000)</span></div>
                   <div class="receipt-row"><span>Next installment</span><span>Oct 31, 2026 · $800</span></div>
