@@ -607,7 +607,7 @@ const screens = {
             </div>
             <div class="modal-footer">
               <button class="btn btn-secondary btn-full" onclick="showScreen('s1','default')">Cancel</button>
-              <button class="btn btn-primary btn-full" onclick="showScreen('s3','default')">Continue →</button>
+              <button class="btn btn-primary btn-full" onclick="showScreen('s3', isCC ? 'cc — default' : 'ach')">Continue →</button>
             </div>
           </div>
         </div>
@@ -850,7 +850,7 @@ const screens = {
             </div>
             <div class="stepper-nav">
               <button class="btn btn-secondary" onclick="showScreen('s5','default')">← Back</button>
-              <button class="btn btn-primary" onclick="showScreen('s7','default')">Continue →</button>
+              <button class="btn btn-primary" onclick="showScreen('s7', isCC ? 'cc — default' : 'ach')">Continue →</button>
             </div>
           </div>
         </div>
@@ -1044,7 +1044,7 @@ const screens = {
             </div>
             <div class="modal-footer">
               <button class="btn btn-secondary btn-full" onclick="showScreen('s1','Case 1 — plan active')">Cancel</button>
-              <button class="btn btn-primary btn-full" onclick="showScreen('s10','default')">Review payment →</button>
+              <button class="btn btn-primary btn-full" onclick="showScreen('s10', isCC ? 'cc — default' : 'ach')">Review payment →</button>
             </div>
           </div>
         </div>
