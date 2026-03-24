@@ -333,8 +333,14 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #1a1a2e; colo
 
   <div class="nav-group">
     <div class="nav-group-label">Payment Plan</div>
-    <button class="nav-item" onclick="showScreen('s9','default')">
-      <span class="badge">S9</span> Installment Method Change
+    <button class="nav-item" onclick="showScreen('s9','cc')">
+      <span class="badge">S9</span> Pay Installment: Amount + Method
+    </button>
+    <button class="nav-item" onclick="showScreen('s10','default')">
+      <span class="badge">S10</span> Pay Installment: Fee + Confirm
+    </button>
+    <button class="nav-item" onclick="showScreen('s11','default')">
+      <span class="badge">S11</span> Pay Installment: Success
     </button>
   </div>
 </nav>
@@ -380,16 +386,17 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #1a1a2e; colo
 // ── Screen registry ─────────────────────────────────────────────────
 const screens = {
 
-  // S1 — Earnings page with modified Debt Overview
+  // S1 — Earnings page: Case 1 (plan active) + Case 2 (no plan)
   s1: {
-    title: 'S1 — Earnings: Debt Overview (modified)',
-    states: ['default','empty ($0 debt)','post-payment return'],
+    title: 'S1 — Earnings: Debt Overview',
+    states: ['Case 1 — plan active','Case 2 — no plan','empty ($0 debt)','post-payment return'],
     render(state) {
-      const hasDebt = state !== 'empty ($0 debt)';
-      const isReturn = state === 'post-payment return';
-      const debtAmt = isReturn ? '($180.00)' : '($480.00)';
-      const personalAmt = isReturn ? '($180.00)' : '($380.00)';
-      const rolledAmt = '($0)';
+      const hasPlan   = state === 'Case 1 — plan active';
+      const hasDebt   = state !== 'empty ($0 debt)';
+      const isReturn  = state === 'post-payment return';
+      const totalDebt = hasPlan ? '($4,800)' : (isReturn ? '($180.00)' : '($480.00)');
+      const personal  = hasPlan ? '($2,900)' : (isReturn ? '($180.00)' : '($380.00)');
+      const rolledUp  = hasPlan ? '($1,900)' : '($0)';
       return `
       <div class="portal-topbar">
         <div class="env-banner">This is the staging environment. Changes here are for testing purposes only. <button>Go to PROD</button></div>
@@ -398,33 +405,58 @@ const screens = {
       </div>
       <div class="portal-page">
         <div class="page-header">
-          <h1>Earnings of <span class="agent-select">sumit rathore (Self) ▾</span></h1>
+          <h1>Earnings of <span class="agent-select">Mike ross (Self) ▾</span></h1>
           <p>Monitor compensation, track chargebacks, and manage downline financial performance.</p>
         </div>
 
         <div class="section-label">Compensation overview <span style="font-size:13px;font-weight:400;color:var(--neutrals-night-60);margin-left:4px;">📅 Last 30 days ▾</span></div>
         <div class="comp-cards">
           <div class="comp-card">
-            <div class="card-icon">＋</div>
-            <div class="card-arrow">→</div>
-            <div class="card-amount">$0</div>
-            <div class="card-label">Gross Compensation</div>
+            <div class="card-icon">＋</div><div class="card-arrow">→</div>
+            <div class="card-amount">$3,200</div>
+            <div class="card-label">Gross compensation</div>
           </div>
           <div class="comp-card">
-            <div class="card-icon" style="border-color:var(--secondary-ocean-100);color:var(--secondary-ocean-100);">－</div>
-            <div class="card-arrow">→</div>
-            <div class="card-amount blue">($0)</div>
+            <div class="card-icon" style="border-color:var(--secondary-ocean-100);color:var(--secondary-ocean-100);">－</div><div class="card-arrow">→</div>
+            <div class="card-amount blue">($300)</div>
             <div class="card-label">Chargebacks deducted <small>(from earnings)</small></div>
           </div>
           <div class="comp-card">
-            <div class="card-icon" style="border-color:var(--utility-success-cypress-100);color:var(--utility-success-cypress-100);">=</div>
-            <div class="card-arrow">→</div>
-            <div class="card-amount green">$0</div>
-            <div class="card-label">Compensation Paid</div>
+            <div class="card-icon" style="border-color:var(--utility-success-cypress-100);color:var(--utility-success-cypress-100);">=</div><div class="card-arrow">→</div>
+            <div class="card-amount green">$2,900</div>
+            <div class="card-label">Compensation paid</div>
           </div>
         </div>
 
-        ${isReturn ? `<div class="alert alert-info" style="margin-bottom:var(--spacing-lg)"><div class="alert-icon">ℹ️</div><div class="alert-text"><strong>Payment received</strong>Your debt balance has been updated. Remaining: $180.00.</div></div>` : ''}
+        ${isReturn ? `<div class="alert alert-info" style="margin-bottom:var(--spacing-lg)"><div class="alert-icon">ℹ️</div><div class="alert-text"><strong>Payment received.</strong> Your balance has been updated.</div></div>` : ''}
+
+        ${hasPlan ? `
+        <!-- CASE 1: Debt payment plan widget — only visible when ops has configured a plan -->
+        <div class="debt-card" style="margin-bottom:var(--spacing-lg)">
+          <div class="debt-header">
+            <h3>Debt payment plan <span style="font-size:13px;font-weight:400;color:var(--neutrals-night-60);cursor:pointer">ⓘ</span></h3>
+            <div class="arrow">→</div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;background:var(--neutrals-night-5);border-radius:var(--radii-2);padding:var(--spacing-lg) var(--spacing-xl);margin-bottom:var(--spacing-lg)">
+            <div style="display:flex;align-items:center;gap:var(--spacing-lg)">
+              <span style="font-size:16px">📅</span>
+              <div>
+                <span style="font-size:15px;font-weight:700">$800</span>
+                <span style="font-size:14px;color:var(--neutrals-night-60)"> due by Sep 30 · </span>
+                <span style="font-size:14px;color:var(--neutrals-night-60)">$0 paid this cycle</span>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="showScreen('s9','cc')" style="background:var(--neutrals-night-100);white-space:nowrap">Pay installment</button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--spacing-sm)">
+            <span style="font-size:13px;color:var(--neutrals-night-60)">$0 paid in total</span>
+            <span style="font-size:13px;color:var(--neutrals-night-60)">$4,800</span>
+          </div>
+          <div style="height:6px;background:var(--neutrals-night-10);border-radius:3px;overflow:hidden">
+            <div style="width:0%;height:100%;background:var(--primary-cypress-100);border-radius:3px"></div>
+          </div>
+        </div>
+        ` : ''}
 
         <div class="bottom-grid">
           <div class="debt-card">
@@ -433,35 +465,63 @@ const screens = {
               <div class="arrow">→</div>
             </div>
             <div class="debt-row">
-              <span class="debt-label bold">Outstanding Debt</span>
-              <span class="debt-amount bold">${hasDebt ? debtAmt : '($0)'}</span>
+              <span class="debt-label bold">Outstanding debt</span>
+              <span class="debt-amount bold">${hasDebt ? totalDebt : '($0)'}</span>
             </div>
+            ${hasPlan ? `<div style="font-size:12px;color:var(--neutrals-night-60);margin:-8px 0 4px;padding-bottom:8px;border-bottom:1px solid var(--neutrals-night-10)">All debt is included in the payment plan.</div>` : ''}
             <div class="debt-row">
               <span class="debt-label">Personal</span>
-              <span class="debt-amount">${hasDebt ? personalAmt : '($0)'}</span>
+              <span class="debt-amount">${hasDebt ? personal : '($0)'}</span>
             </div>
             <div class="debt-row">
-              <span class="debt-label">Rolled-up from Team</span>
-              <span class="debt-amount">${rolledAmt}</span>
+              <span class="debt-label">Rolled-up from team</span>
+              <span class="debt-amount">${rolledUp}</span>
             </div>
             <div class="debt-actions">
-              ${hasDebt ? `<button class="btn btn-primary btn-sm" onclick="showScreen('s2','cc')">Pay Now</button>` : ''}
+              ${hasDebt ? `<button class="btn btn-primary btn-sm" onclick="showScreen('s2','cc')">Pay now</button>` : ''}
               <button class="btn btn-secondary btn-sm">Transaction history</button>
             </div>
           </div>
 
-          <div class="rollup-card">
-            ${hasDebt
-              ? `<div class="rollup-icon">😟</div><h4>Outstanding debt</h4><p>You have an outstanding balance of <strong>${debtAmt}</strong>. Pay now to avoid impact on portal access.</p>`
-              : `<div class="rollup-icon">😊</div><h4>No roll-up risk!</h4><p>As you don't have any downlines there is no roll-up risk to you at the moment.</p>`
-            }
+          <div class="rollup-card" style="padding:var(--spacing-2xl)">
+            ${hasPlan ? `
+              <div style="width:100%">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--spacing-lg)"><span style="font-size:15px;font-weight:700">Roll-up risk to you</span><div class="arrow">→</div></div>
+                <div style="display:flex;gap:var(--spacing-xl);align-items:center">
+                  <div style="width:80px;height:80px;border-radius:50%;background:conic-gradient(var(--utility-error-carmine-red-100) 0% 40%,var(--secondary-salamander-100) 40% 80%,#888 80% 100%);flex-shrink:0"></div>
+                  <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;flex:1">
+                    <div style="display:flex;justify-content:space-between;font-weight:700"><span>Total risk</span><span style="color:var(--utility-error-carmine-red-100)">($1,000)</span></div>
+                    <div style="display:flex;justify-content:space-between"><span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:var(--utility-error-carmine-red-100);display:inline-block"></span>1-30 days</span><span style="color:var(--utility-error-carmine-red-100)">($400)</span></div>
+                    <div style="display:flex;justify-content:space-between"><span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:var(--secondary-salamander-100);display:inline-block"></span>31-60 days</span><span style="color:var(--secondary-salamander-100)">($400)</span></div>
+                    <div style="display:flex;justify-content:space-between"><span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#888;display:inline-block"></span>61+ days</span><span>($200)</span></div>
+                  </div>
+                </div>
+              </div>
+            ` : hasDebt ? `
+              <div class="rollup-icon">😟</div>
+              <h4>Outstanding debt</h4>
+              <p>You have an outstanding balance. Pay now to avoid impact on portal access.</p>
+            ` : `
+              <div class="rollup-icon">😊</div>
+              <h4>No roll-up risk!</h4>
+              <p>As you don't have any downlines there is no roll-up risk to you at the moment.</p>
+            `}
           </div>
         </div>
 
+        ${hasPlan ? `
+        <div style="margin-top:var(--spacing-lg)">
+          <div class="section-label">Direct downlines overview</div>
+          <div style="color:var(--neutrals-night-40);font-size:13px;padding:var(--spacing-lg);background:#fff;border-radius:var(--radii-2);border:1px solid var(--neutrals-night-10);display:flex;gap:var(--spacing-lg);align-items:center">
+            <input placeholder="Search by agent name" style="border:1px solid var(--neutrals-night-20);border-radius:var(--radii-2);padding:8px 12px;font-size:13px;width:220px" />
+            <span>📅 Last 30 days ▾</span>
+            <button style="margin-left:auto;border:1px solid var(--neutrals-night-20);border-radius:var(--radii-2);padding:6px 16px;font-size:13px;background:#fff;cursor:pointer">Export</button>
+          </div>
+        </div>` : `
         <div style="margin-top:var(--spacing-2xl)">
           <div class="section-label">Your compensation rates</div>
           <div style="color:var(--neutrals-night-40);font-size:13px;padding:var(--spacing-lg);background:#fff;border-radius:var(--radii-2);border:1px solid var(--neutrals-night-10)">Compensation rates table — existing content, unchanged</div>
-        </div>
+        </div>`}
       </div>`;
     }
   },
@@ -584,7 +644,7 @@ const screens = {
               <div class="form-group">
                 <div class="form-label">Payment amount</div>
                 <input class="form-input ${isDeclined ? 'error' : ''}" type="text" value="$480.00" />
-                <div class="form-hint">Outstanding balance: <strong>$480.00</strong> · Minimum: $50.00</div>
+                <div class="form-hint">Pay any amount between <strong>$50.00</strong> and <strong>$480.00</strong> (full balance)</div>
               </div>
 
               <div class="fee-breakdown">
@@ -890,54 +950,177 @@ const screens = {
     }
   },
 
-  // S9 — Payment Plan: Installment Method Change
+  // S9 — Pay installment: Step 1 — Amount + Method
   s9: {
-    title: 'S9 — Payment Plan: Installment Method Change',
-    states: ['default','cc selected','saved'],
+    title: 'S9 — Pay Installment: Step 1 — Amount + Method',
+    states: ['cc','ach','state restriction','pay more'],
     render(state) {
-      const isCC = state === 'cc selected' || state === 'saved';
-      const isSaved = state === 'saved';
+      const isCC = state === 'cc' || state === 'pay more';
+      const isRestricted = state === 'state restriction';
+      const isMore = state === 'pay more';
       return `
       <div class="portal-topbar"><div class="env-banner">Staging environment <button>Go to PROD</button></div><div class="avatar">P</div></div>
-      <div class="portal-page">
-        <div class="page-header">
-          <h1>Earnings of <span class="agent-select">sumit rathore ▾</span></h1>
+      <div class="portal-page" style="position:relative">
+        <div style="filter:blur(2px);opacity:.4;pointer-events:none">
+          <div class="page-header"><h1>Earnings of <span class="agent-select">Mike ross ▾</span></h1></div>
+          <div style="background:#fff;border:1px solid var(--neutrals-night-10);border-radius:var(--radii-4);padding:var(--spacing-2xl);margin-bottom:var(--spacing-lg)"><h3>Debt payment plan</h3></div>
         </div>
-        <div class="debt-card" style="max-width:600px">
-          <div class="debt-header"><h3>Active payment plan</h3></div>
-          <div style="display:flex;flex-direction:column;gap:var(--spacing-md);margin-bottom:var(--spacing-xl)">
-            <div class="debt-row"><span class="debt-label">Total debt</span><span class="debt-amount">($480.00)</span></div>
-            <div class="debt-row"><span class="debt-label">Monthly installment</span><span style="font-size:15px;font-weight:600">$120.00</span></div>
-            <div class="debt-row"><span class="debt-label">Next payment due</span><span style="font-size:15px">Apr 1, 2026</span></div>
-            <div class="debt-row"><span class="debt-label">Current method</span><span style="font-size:15px">ACH ••••1234</span></div>
-          </div>
-          <div class="divider"></div>
-          <div style="margin-top:var(--spacing-xl)">
-            <div class="form-label" style="margin-bottom:var(--spacing-md)">Change payment method for installments</div>
-            <div class="method-selector" style="margin-bottom:var(--spacing-lg)">
-              <div class="method-option ${!isCC ? 'selected' : ''}" onclick="showScreen('s9','default')"><div class="radio"></div><div><div class="method-label">ACH</div><div class="method-sub">Bank account · No fee</div></div></div>
-              <div class="method-option ${isCC ? 'selected' : ''}" onclick="showScreen('s9','cc selected')"><div class="radio"></div><div><div class="method-label">Credit card</div><div class="method-sub">Fee applies per installment</div></div></div>
+        <div class="modal-overlay">
+          <div class="modal">
+            <div class="modal-header">
+              <div>
+                <div class="text-sm text-muted" style="margin-bottom:3px">Step 1 of 2 · Debt payment plan</div>
+                <h2>Pay installment</h2>
+              </div>
+              <button class="modal-close" onclick="showScreen('s1','Case 1 — plan active')">✕</button>
             </div>
-            ${isCC ? `
-            <div style="display:flex;flex-direction:column;gap:var(--spacing-lg)">
-              ${isSaved ? `
-              <div class="alert alert-info"><div class="alert-icon">ℹ️</div><div class="alert-text">Using saved card: <strong>Visa ••••4242</strong>. Future installments will be charged to this card.</div></div>
-              ` : `
+            <div class="step-dots"><div class="step-dot active"></div><div class="step-dot"></div></div>
+            <div class="modal-body">
+
+              <div style="background:var(--neutrals-night-5);border-radius:var(--radii-2);padding:var(--spacing-lg);display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <div style="font-size:12px;color:var(--neutrals-night-60);margin-bottom:2px">Current installment due</div>
+                  <div style="font-size:18px;font-weight:700">$800.00 <span style="font-size:13px;font-weight:400;color:var(--neutrals-night-60)">by Sep 30</span></div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-size:12px;color:var(--neutrals-night-60);margin-bottom:2px">Total remaining</div>
+                  <div style="font-size:14px;font-weight:600;color:var(--utility-error-carmine-red-100)">($4,800)</div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="form-label">Amount to pay</div>
+                <input class="form-input" type="text" value="${isMore ? '$1,200.00' : '$800.00'}" />
+                <div class="form-hint">Minimum: <strong>$800.00</strong> (installment amount) · Pay more to clear debt faster</div>
+              </div>
+
+              ${isMore ? `<div class="alert alert-info"><div class="alert-icon">ℹ️</div><div class="alert-text">Paying <strong>$400</strong> above the installment. The extra will reduce your remaining balance.</div></div>` : ''}
+
+              <div class="form-group">
+                <div class="form-label">Payment method</div>
+                <div class="method-selector">
+                  <div class="method-option ${!isCC && !isRestricted ? 'selected' : ''}" onclick="showScreen('s9','ach')">
+                    <div class="radio"></div>
+                    <div><div class="method-label">ACH</div><div class="method-sub">Bank account · No fee</div></div>
+                  </div>
+                  <div class="method-option ${isCC ? 'selected' : ''} ${isRestricted ? 'disabled' : ''}" ${!isRestricted ? `onclick="showScreen('s9','cc')"` : ''}>
+                    <div class="radio"></div>
+                    <div><div class="method-label">Credit card</div><div class="method-sub">Visa, Mastercard · Fee applies</div></div>
+                  </div>
+                </div>
+                ${isRestricted ? `<div class="restriction-notice"><div class="icon">⚠</div><p>Credit card payments are not available in your state. Please use ACH to continue.</p></div>` : ''}
+              </div>
+
+              ${isCC ? `
               <div class="form-group">
                 <div class="form-label">Card number</div>
-                <div class="stripe-field"><span>Card number</span><span class="stripe-badge">Stripe</span></div>
+                <div class="stripe-field"><span>4242 4242 4242 4242</span><span class="stripe-badge">Stripe</span></div>
               </div>
               <div class="input-row">
                 <div class="form-group"><div class="form-label">Expiry</div><div class="stripe-field"><span>MM / YY</span><span class="stripe-badge">Stripe</span></div></div>
                 <div class="form-group"><div class="form-label">CVV</div><div class="stripe-field"><span>•••</span><span class="stripe-badge">Stripe</span></div></div>
               </div>
+              <div class="toggle-row"><div class="toggle-box"></div><div class="toggle-label">Save this card for future installments</div></div>
+              ` : `
+              <div class="form-group">
+                <div class="form-label">Bank account on file</div>
+                <div class="stripe-field"><span>••••••••1234 (Checking)</span></div>
+                <div class="form-hint">No processing fee for ACH payments.</div>
+              </div>
               `}
-              <div class="alert alert-warning"><div class="alert-icon">⚠️</div><div class="alert-text">A processing fee (~2.36%) applies to each installment paid by credit card. Your installment amount will not change — the fee is charged separately.</div></div>
             </div>
-            ` : ''}
-            <div style="display:flex;gap:var(--spacing-sm);margin-top:var(--spacing-xl)">
-              <button class="btn btn-secondary">Cancel</button>
-              <button class="btn btn-primary" onclick="${isCC && !isSaved ? "showScreen('s9','saved')" : ''}">${isSaved ? '✓ Method saved' : 'Save payment method'}</button>
+            <div class="modal-footer">
+              <button class="btn btn-secondary btn-full" onclick="showScreen('s1','Case 1 — plan active')">Cancel</button>
+              <button class="btn btn-primary btn-full" onclick="showScreen('s10','default')">Review payment →</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+  },
+
+  // S10 — Pay installment: Step 2 — Fee Review + Confirm
+  s10: {
+    title: 'S10 — Pay Installment: Step 2 — Fee Review + Confirm',
+    states: ['default','processing','card declined'],
+    render(state) {
+      const isProcessing = state === 'processing';
+      const isDeclined   = state === 'card declined';
+      return `
+      <div class="portal-topbar"><div class="env-banner">Staging environment <button>Go to PROD</button></div><div class="avatar">P</div></div>
+      <div class="portal-page" style="position:relative">
+        <div style="filter:blur(2px);opacity:.4;pointer-events:none">
+          <div class="page-header"><h1>Earnings of <span class="agent-select">Mike ross ▾</span></h1></div>
+        </div>
+        <div class="modal-overlay">
+          <div class="modal">
+            <div class="modal-header">
+              <div>
+                <div class="text-sm text-muted" style="margin-bottom:3px">Step 2 of 2 · Debt payment plan</div>
+                <h2>Review &amp; confirm</h2>
+              </div>
+              <button class="modal-close" onclick="showScreen('s1','Case 1 — plan active')">✕</button>
+            </div>
+            <div class="step-dots"><div class="step-dot"></div><div class="step-dot active"></div></div>
+            <div class="modal-body">
+              ${isDeclined ? `<div class="alert alert-error"><div class="alert-icon">❌</div><div class="alert-text"><strong>Payment failed.</strong> Your card was declined. Go back to try a different card or switch to ACH.</div></div>` : ''}
+
+              <div class="fee-breakdown">
+                <div class="fee-row"><span>Installment amount</span><span>$800.00</span></div>
+                <div class="fee-row"><span>Processing fee <span class="fee-label-tag">Credit card</span></span><span>$18.88</span></div>
+                <div class="fee-row total"><span>Total charged to card</span><span>$818.88</span></div>
+              </div>
+
+              <div style="background:var(--neutrals-night-5);border-radius:var(--radii-2);padding:var(--spacing-lg);display:flex;flex-direction:column;gap:8px">
+                <div class="receipt-row"><span style="color:var(--neutrals-night-60)">Method</span><span>Visa ••••4242</span></div>
+                <div class="receipt-row"><span style="color:var(--neutrals-night-60)">Remaining after payment</span><span style="color:var(--utility-error-carmine-red-100);font-weight:600">($4,000)</span></div>
+                <div class="receipt-row"><span style="color:var(--neutrals-night-60)">Next installment due</span><span>Oct 31, 2026</span></div>
+              </div>
+
+              <div class="text-sm text-muted" style="line-height:1.6">The processing fee of $18.88 does not count toward your debt balance. Your debt reduces by <strong>$800.00</strong> only.</div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary btn-full" onclick="showScreen('s9','cc')">← Back</button>
+              <button class="btn btn-primary btn-full ${isProcessing ? 'btn-loading' : ''}" onclick="${isProcessing ? '' : "showScreen('s11','default')"}">
+                ${isProcessing ? `<div class="spinner"></div> Processing…` : 'Confirm payment'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+  },
+
+  // S11 — Pay installment: Success
+  s11: {
+    title: 'S11 — Pay Installment: Success',
+    states: ['default'],
+    render(state) {
+      return `
+      <div class="portal-topbar"><div class="env-banner">Staging environment <button>Go to PROD</button></div><div class="avatar">P</div></div>
+      <div class="portal-page" style="position:relative">
+        <div style="filter:blur(2px);opacity:.4;pointer-events:none">
+          <div class="page-header"><h1>Earnings of <span class="agent-select">Mike ross ▾</span></h1></div>
+        </div>
+        <div class="modal-overlay">
+          <div class="modal">
+            <div class="modal-body">
+              <div class="success-state">
+                <div class="success-icon">✓</div>
+                <div class="success-title">Installment paid</div>
+                <div class="success-sub">Your installment payment has been processed. Your plan is up to date.</div>
+                <div class="receipt-box">
+                  <div class="receipt-row"><span>Installment paid</span><span>$800.00</span></div>
+                  <div class="receipt-row"><span>Processing fee</span><span>$18.88</span></div>
+                  <div class="receipt-row total"><span>Total charged</span><span>$818.88</span></div>
+                  <div class="divider" style="margin-top:4px"></div>
+                  <div class="receipt-row"><span>Method</span><span>Visa ••••4242</span></div>
+                  <div class="receipt-row"><span>Date</span><span>Mar 24, 2026</span></div>
+                  <div class="receipt-row"><span>Remaining debt</span><span style="color:var(--utility-error-carmine-red-100);font-weight:700">($4,000)</span></div>
+                  <div class="receipt-row"><span>Next installment</span><span>Oct 31, 2026 · $800</span></div>
+                </div>
+                <button class="btn btn-primary btn-full" onclick="showScreen('s1','Case 1 — plan active')">← Back to Earnings</button>
+              </div>
             </div>
           </div>
         </div>
