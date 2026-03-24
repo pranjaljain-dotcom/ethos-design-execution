@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Execution — CC Payments for Agent Debt | PRD #01</title>
+<style>
+/* ── Design Tokens ───────────────────────────────────────────────── */
+:root {
+  --primary-cypress-5:   #f3f7f7;
+  --primary-cypress-10:  #e6efee;
+  --primary-cypress-25:  #c0d8d5;
+  --primary-cypress-50:  #82b0ab;
+  --primary-cypress-75:  #438981;
+  --primary-cypress-100: #056257;
+  --primary-cypress-150: #04463e;
+  --secondary-spearmint-100: #0a9742;
+  --secondary-spearmint-25:  #c2e5d0;
+  --secondary-ocean-100: #336cc3;
+  --secondary-ocean-15:  #deebff;
+  --secondary-salamander-100: #f26d00;
+  --secondary-salamander-25:  #fcdabf;
+  --neutrals-night-5:   #f4f4f4;
+  --neutrals-night-10:  #e9e9e9;
+  --neutrals-night-20:  #d4d4d4;
+  --neutrals-night-40:  #a9a9a9;
+  --neutrals-night-60:  #7e7e7e;
+  --neutrals-night-80:  #525252;
+  --neutrals-night-100: #272727;
+  --utility-error-carmine-red-100: #f44b40;
+  --utility-error-carmine-red-5:   #fff6f6;
+  --utility-success-cypress-100: #056257;
+  --utility-success-cypress-5:   #f3f7f7;
+  --utility-warning-royal-orange-100: #f49640;
+  --utility-info-ocean-100: #336cc3;
+  --utility-info-ocean-5:   #f5f8fc;
+  --spacing-xs: 4px; --spacing-sm: 8px; --spacing-md: 12px;
+  --spacing-lg: 16px; --spacing-xl: 20px; --spacing-2xl: 24px;
+  --spacing-3xl: 32px; --spacing-4xl: 64px;
+  --radii-1: 4px; --radii-2: 8px; --radii-4: 16px; --radii-5: 32px;
+}
+
+/* ── Shell ───────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #1a1a2e; color: var(--neutrals-night-100); display: flex; height: 100vh; overflow: hidden; }
+
+/* ── Left nav (screen list) ──────────────────────────────────────── */
+#screen-nav { width: 220px; background: #111827; color: #e5e7eb; display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0; }
+#screen-nav .nav-header { padding: var(--spacing-lg); border-bottom: 1px solid #374151; }
+#screen-nav .nav-header h2 { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #9ca3af; margin-bottom: 4px; }
+#screen-nav .nav-header p { font-size: 12px; color: #6b7280; line-height: 1.4; }
+#screen-nav .nav-group { padding: var(--spacing-sm) 0; border-bottom: 1px solid #1f2937; }
+#screen-nav .nav-group-label { padding: 6px var(--spacing-lg); font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6b7280; }
+#screen-nav button.nav-item { width: 100%; text-align: left; padding: 8px var(--spacing-lg); background: none; border: none; color: #d1d5db; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background .15s; }
+#screen-nav button.nav-item:hover { background: #1f2937; }
+#screen-nav button.nav-item.active { background: #065f46; color: #fff; font-weight: 600; }
+#screen-nav button.nav-item .badge { font-size: 10px; background: #374151; border-radius: 3px; padding: 1px 5px; color: #9ca3af; }
+#screen-nav button.nav-item.active .badge { background: #047857; color: #fff; }
+
+/* ── Main area ───────────────────────────────────────────────────── */
+#main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ── Top bar ─────────────────────────────────────────────────────── */
+#top-bar { background: #111827; border-bottom: 1px solid #374151; padding: var(--spacing-md) var(--spacing-2xl); display: flex; align-items: center; gap: var(--spacing-lg); flex-shrink: 0; }
+#top-bar h1 { font-size: 14px; font-weight: 600; color: #f9fafb; flex: 1; }
+#top-bar .prd-ref { font-size: 11px; color: #6b7280; }
+.state-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.state-tab { padding: 4px 12px; border-radius: 20px; font-size: 12px; border: 1px solid #374151; background: none; color: #9ca3af; cursor: pointer; transition: all .15s; }
+.state-tab:hover { border-color: #6b7280; color: #d1d5db; }
+.state-tab.active { background: #056257; border-color: #056257; color: #fff; font-weight: 600; }
+
+/* ── Canvas ──────────────────────────────────────────────────────── */
+#canvas { flex: 1; overflow-y: auto; display: flex; align-items: flex-start; justify-content: center; padding: var(--spacing-3xl) var(--spacing-2xl); background: #0f172a; }
+
+/* Portal frame */
+.portal-frame { width: 1100px; min-height: 700px; background: var(--neutrals-night-5); border-radius: var(--radii-4); overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,.5); display: flex; }
+
+/* Portal sidebar */
+.portal-sidebar { width: 80px; background: #fff; border-right: 1px solid var(--neutrals-night-10); display: flex; flex-direction: column; align-items: center; padding: var(--spacing-lg) 0; gap: 4px; flex-shrink: 0; }
+.portal-sidebar .logo { width: 40px; height: 24px; margin-bottom: var(--spacing-lg); display: flex; align-items: center; justify-content: center; }
+.portal-sidebar .logo span { font-size: 10px; font-weight: 800; color: var(--primary-cypress-100); letter-spacing: -.02em; }
+.sidebar-item { width: 60px; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 3px; border-radius: var(--radii-2); cursor: pointer; transition: background .15s; }
+.sidebar-item:hover { background: var(--primary-cypress-5); }
+.sidebar-item.active { background: var(--primary-cypress-5); }
+.sidebar-item .icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; color: var(--neutrals-night-60); font-size: 18px; }
+.sidebar-item.active .icon { color: var(--primary-cypress-100); }
+.sidebar-item .label { font-size: 9px; color: var(--neutrals-night-60); text-align: center; line-height: 1.2; }
+.sidebar-item.active .label { color: var(--primary-cypress-100); font-weight: 600; }
+.sidebar-divider { width: 40px; height: 1px; background: var(--neutrals-night-10); margin: 4px 0; }
+.sidebar-item.active::before { content: ''; position: absolute; left: 0; width: 3px; height: 36px; background: var(--primary-cypress-100); border-radius: 0 2px 2px 0; }
+.sidebar-item { position: relative; }
+
+/* Portal content */
+.portal-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* Portal top bar */
+.portal-topbar { height: 52px; background: #fff; border-bottom: 1px solid var(--neutrals-night-10); display: flex; align-items: center; padding: 0 var(--spacing-2xl); gap: var(--spacing-lg); }
+.portal-topbar .env-banner { flex: 1; background: #f26d00; color: #fff; font-size: 12px; font-weight: 600; padding: 6px var(--spacing-lg); border-radius: var(--radii-1); text-align: center; display: flex; align-items: center; justify-content: center; gap: var(--spacing-sm); }
+.portal-topbar .env-banner button { background: #fff; color: #f26d00; border: none; border-radius: 3px; padding: 2px 10px; font-size: 11px; font-weight: 700; cursor: pointer; }
+.portal-topbar .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--primary-cypress-100); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 700; }
+.portal-topbar .notif { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: var(--neutrals-night-60); font-size: 18px; cursor: pointer; }
+
+/* Portal page */
+.portal-page { flex: 1; overflow-y: auto; padding: var(--spacing-3xl); }
+
+/* Page header */
+.page-header { margin-bottom: var(--spacing-3xl); }
+.page-header h1 { font-size: 32px; font-weight: 700; color: var(--neutrals-night-100); display: flex; align-items: center; gap: var(--spacing-md); }
+.page-header h1 .agent-select { font-size: 14px; font-weight: 500; color: var(--neutrals-night-80); background: #fff; border: 1px solid var(--neutrals-night-20); border-radius: var(--radii-5); padding: 4px 12px 4px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.page-header p { font-size: 14px; color: var(--neutrals-night-60); margin-top: 4px; }
+
+/* Comp overview */
+.section-label { font-size: 16px; font-weight: 600; color: var(--neutrals-night-100); margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: var(--spacing-md); }
+.comp-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-lg); margin-bottom: var(--spacing-2xl); }
+.comp-card { background: #fff; border: 1px solid var(--neutrals-night-10); border-radius: var(--radii-4); padding: var(--spacing-2xl); position: relative; }
+.comp-card .card-icon { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--neutrals-night-20); display: flex; align-items: center; justify-content: center; font-size: 14px; margin-bottom: var(--spacing-lg); color: var(--neutrals-night-60); }
+.comp-card .card-arrow { position: absolute; top: var(--spacing-lg); right: var(--spacing-lg); width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--neutrals-night-20); display: flex; align-items: center; justify-content: center; color: var(--neutrals-night-60); font-size: 14px; cursor: pointer; }
+.comp-card .card-amount { font-size: 28px; font-weight: 700; color: var(--neutrals-night-100); margin-bottom: 4px; }
+.comp-card .card-amount.red { color: var(--utility-error-carmine-red-100); }
+.comp-card .card-amount.blue { color: var(--secondary-ocean-100); }
+.comp-card .card-amount.green { color: var(--utility-success-cypress-100); }
+.comp-card .card-label { font-size: 14px; color: var(--neutrals-night-80); }
+.comp-card .card-label small { color: var(--neutrals-night-60); }
+
+/* Bottom grid */
+.bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); }
+
+/* Debt overview card */
+.debt-card { background: #fff; border: 1px solid var(--neutrals-night-10); border-radius: var(--radii-4); padding: var(--spacing-2xl); }
+.debt-card .debt-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-xl); }
+.debt-card .debt-header h3 { font-size: 16px; font-weight: 600; }
+.debt-card .debt-header .arrow { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--neutrals-night-20); display: flex; align-items: center; justify-content: center; color: var(--neutrals-night-60); font-size: 14px; cursor: pointer; }
+.debt-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--neutrals-night-10); }
+.debt-row:last-of-type { border-bottom: none; }
+.debt-row .debt-label { font-size: 15px; color: var(--neutrals-night-80); }
+.debt-row .debt-label.bold { font-weight: 700; color: var(--neutrals-night-100); font-size: 16px; }
+.debt-row .debt-amount { font-size: 15px; color: var(--utility-error-carmine-red-100); font-weight: 600; }
+.debt-row .debt-amount.bold { font-size: 16px; font-weight: 700; }
+.debt-actions { margin-top: var(--spacing-xl); display: flex; gap: var(--spacing-sm); }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: var(--radii-2); font-size: 14px; font-weight: 600; cursor: pointer; transition: all .15s; border: none; padding: 0 var(--spacing-xl); height: 44px; }
+.btn-primary { background: var(--primary-cypress-100); color: #fff; }
+.btn-primary:hover { background: var(--primary-cypress-150); }
+.btn-secondary { background: #fff; color: var(--neutrals-night-100); border: 1.5px solid var(--neutrals-night-20); }
+.btn-secondary:hover { border-color: var(--neutrals-night-40); }
+.btn-outline-full { width: 100%; background: #fff; border: 1.5px solid var(--neutrals-night-20); color: var(--neutrals-night-100); border-radius: var(--radii-2); padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.btn-outline-full:hover { border-color: var(--neutrals-night-40); }
+.btn-sm { height: 36px; font-size: 13px; padding: 0 var(--spacing-lg); }
+.btn-full { width: 100%; }
+.btn-loading { opacity: .7; cursor: wait; }
+.btn-disabled { opacity: .4; cursor: not-allowed; }
+
+/* Roll-up card */
+.rollup-card { background: #fff; border: 1px solid var(--neutrals-night-10); border-radius: var(--radii-4); padding: var(--spacing-2xl); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: var(--spacing-lg); }
+.rollup-card .rollup-icon { font-size: 48px; }
+.rollup-card h4 { font-size: 16px; font-weight: 700; color: var(--neutrals-night-100); }
+.rollup-card p { font-size: 13px; color: var(--neutrals-night-60); line-height: 1.5; }
+
+/* ── Modal overlay ───────────────────────────────────────────────── */
+.modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal { background: #fff; border-radius: var(--radii-4); width: 460px; max-height: 90%; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+.modal-header { padding: var(--spacing-2xl); border-bottom: 1px solid var(--neutrals-night-10); display: flex; align-items: center; justify-content: space-between; }
+.modal-header h2 { font-size: 18px; font-weight: 700; }
+.modal-header .step-indicator { font-size: 12px; color: var(--neutrals-night-60); }
+.modal-close { width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--neutrals-night-5); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--neutrals-night-60); flex-shrink: 0; }
+.modal-body { padding: var(--spacing-2xl); display: flex; flex-direction: column; gap: var(--spacing-xl); }
+.modal-footer { padding: var(--spacing-lg) var(--spacing-2xl) var(--spacing-2xl); display: flex; gap: var(--spacing-sm); }
+
+/* Step dots */
+.step-dots { display: flex; gap: 6px; align-items: center; padding: 0 var(--spacing-2xl) var(--spacing-sm); }
+.step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--neutrals-night-20); }
+.step-dot.active { background: var(--primary-cypress-100); width: 20px; border-radius: 4px; }
+
+/* Form elements */
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 13px; font-weight: 600; color: var(--neutrals-night-80); }
+.form-input { height: 48px; border: 1.5px solid var(--neutrals-night-20); border-radius: var(--radii-2); padding: 0 var(--spacing-lg); font-size: 14px; color: var(--neutrals-night-100); background: #fff; outline: none; transition: border-color .15s; width: 100%; }
+.form-input:focus { border-color: var(--primary-cypress-100); }
+.form-input.error { border-color: var(--utility-error-carmine-red-100); }
+.form-hint { font-size: 12px; color: var(--neutrals-night-60); }
+.form-hint.warning { color: var(--secondary-salamander-100); }
+.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm); }
+
+/* Stripe placeholder */
+.stripe-field { height: 48px; border: 1.5px solid var(--neutrals-night-20); border-radius: var(--radii-2); padding: 0 var(--spacing-lg); display: flex; align-items: center; gap: var(--spacing-sm); background: #fff; }
+.stripe-field .stripe-badge { font-size: 10px; font-weight: 700; color: #635bff; background: #f0effe; border-radius: 3px; padding: 1px 5px; margin-left: auto; }
+.stripe-field span { font-size: 14px; color: var(--neutrals-night-40); }
+
+/* Radio method selector */
+.method-selector { display: flex; gap: var(--spacing-sm); }
+.method-option { flex: 1; border: 1.5px solid var(--neutrals-night-20); border-radius: var(--radii-2); padding: var(--spacing-lg); cursor: pointer; display: flex; align-items: center; gap: var(--spacing-md); transition: all .15s; }
+.method-option:hover { border-color: var(--primary-cypress-50); }
+.method-option.selected { border-color: var(--primary-cypress-100); background: var(--primary-cypress-5); }
+.method-option .radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--neutrals-night-40); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.method-option.selected .radio { border-color: var(--primary-cypress-100); }
+.method-option.selected .radio::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--primary-cypress-100); }
+.method-option.disabled { opacity: .45; cursor: not-allowed; background: var(--neutrals-night-5); }
+.method-label { font-size: 14px; font-weight: 600; }
+.method-sub { font-size: 12px; color: var(--neutrals-night-60); }
+
+/* Toggle / checkbox */
+.toggle-row { display: flex; align-items: center; gap: var(--spacing-md); }
+.toggle-box { width: 18px; height: 18px; border: 1.5px solid var(--neutrals-night-20); border-radius: 3px; flex-shrink: 0; }
+.toggle-label { font-size: 13px; color: var(--neutrals-night-80); }
+
+/* Fee breakdown */
+.fee-breakdown { background: var(--neutrals-night-5); border-radius: var(--radii-2); padding: var(--spacing-lg); display: flex; flex-direction: column; gap: 8px; }
+.fee-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: var(--neutrals-night-80); }
+.fee-row.total { font-weight: 700; color: var(--neutrals-night-100); font-size: 16px; padding-top: 8px; border-top: 1px solid var(--neutrals-night-20); margin-top: 4px; }
+.fee-label-tag { font-size: 11px; background: var(--secondary-salamander-25); color: var(--secondary-salamander-100); border-radius: var(--radii-1); padding: 1px 6px; margin-left: 4px; }
+
+/* Alert */
+.alert { border-radius: var(--radii-2); padding: var(--spacing-lg); display: flex; gap: var(--spacing-md); align-items: flex-start; }
+.alert-error { background: var(--utility-error-carmine-red-5); border: 1px solid #fca5a5; }
+.alert-warning { background: #fffaf6; border: 1px solid var(--secondary-salamander-25); }
+.alert-info { background: var(--utility-info-ocean-5); border: 1px solid var(--secondary-ocean-15); }
+.alert-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.alert-text { font-size: 13px; line-height: 1.5; }
+.alert-text strong { display: block; font-weight: 700; margin-bottom: 2px; }
+
+/* Success state */
+.success-state { display: flex; flex-direction: column; align-items: center; text-align: center; padding: var(--spacing-4xl) var(--spacing-2xl); gap: var(--spacing-lg); }
+.success-icon { width: 64px; height: 64px; border-radius: 50%; background: var(--utility-success-cypress-5); display: flex; align-items: center; justify-content: center; font-size: 28px; }
+.success-title { font-size: 20px; font-weight: 700; color: var(--neutrals-night-100); }
+.success-sub { font-size: 14px; color: var(--neutrals-night-60); line-height: 1.5; }
+.receipt-box { width: 100%; background: var(--neutrals-night-5); border-radius: var(--radii-2); padding: var(--spacing-lg); display: flex; flex-direction: column; gap: 8px; }
+.receipt-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--neutrals-night-80); }
+.receipt-row.total { font-weight: 700; color: var(--neutrals-night-100); border-top: 1px solid var(--neutrals-night-20); padding-top: 8px; margin-top: 4px; }
+
+/* ── D2 Stepper layout ───────────────────────────────────────────── */
+.stepper-page { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+.stepper-back { padding: var(--spacing-lg) var(--spacing-3xl); border-bottom: 1px solid var(--neutrals-night-10); background: #fff; }
+.stepper-back a { font-size: 14px; color: var(--primary-cypress-100); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
+.stepper-body { display: flex; flex: 1; }
+.stepper-sidebar { width: 220px; padding: var(--spacing-3xl); border-right: 1px solid var(--neutrals-night-10); background: #fff; flex-shrink: 0; }
+.stepper-sidebar h3 { font-size: 16px; font-weight: 700; margin-bottom: var(--spacing-2xl); }
+.progress-steps { display: flex; flex-direction: column; gap: 0; }
+.progress-step { display: flex; gap: var(--spacing-md); position: relative; padding-bottom: var(--spacing-2xl); }
+.progress-step:last-child { padding-bottom: 0; }
+.progress-step::before { content: ''; position: absolute; left: 11px; top: 24px; bottom: 0; width: 2px; background: var(--neutrals-night-20); }
+.progress-step:last-child::before { display: none; }
+.progress-step.done::before { background: var(--primary-cypress-100); }
+.step-circle { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--neutrals-night-20); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; color: var(--neutrals-night-60); background: #fff; z-index: 1; }
+.progress-step.done .step-circle { background: var(--primary-cypress-100); border-color: var(--primary-cypress-100); color: #fff; }
+.progress-step.current .step-circle { border-color: var(--primary-cypress-100); color: var(--primary-cypress-100); }
+.step-info { padding-top: 2px; }
+.step-name { font-size: 13px; font-weight: 600; color: var(--neutrals-night-100); }
+.progress-step.next .step-name { color: var(--neutrals-night-40); font-weight: 400; }
+.step-sub { font-size: 12px; color: var(--neutrals-night-60); margin-top: 2px; }
+.stepper-content { flex: 1; padding: var(--spacing-3xl); background: var(--neutrals-night-5); overflow-y: auto; }
+.stepper-content h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+.stepper-content .step-desc { font-size: 14px; color: var(--neutrals-night-60); margin-bottom: var(--spacing-2xl); }
+.stepper-card { background: #fff; border: 1px solid var(--neutrals-night-10); border-radius: var(--radii-4); padding: var(--spacing-2xl); }
+.stepper-nav { display: flex; justify-content: space-between; align-items: center; margin-top: var(--spacing-2xl); }
+
+/* Debt summary table (D2 Step 1) */
+.debt-summary { display: flex; flex-direction: column; gap: 10px; }
+.debt-source-row { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: var(--neutrals-night-5); border-radius: var(--radii-1); }
+.debt-source-info .policy { font-size: 14px; font-weight: 600; }
+.debt-source-info .reason { font-size: 12px; color: var(--neutrals-night-60); margin-top: 2px; }
+.debt-source-amount { font-size: 14px; font-weight: 700; color: var(--utility-error-carmine-red-100); }
+.debt-total-row { display: flex; justify-content: space-between; padding: var(--spacing-lg); border-top: 2px solid var(--neutrals-night-20); margin-top: 4px; }
+.debt-total-label { font-size: 16px; font-weight: 700; }
+.debt-total-amount { font-size: 18px; font-weight: 700; color: var(--utility-error-carmine-red-100); }
+
+/* State restriction notice */
+.restriction-notice { background: #fffaf6; border: 1px solid var(--secondary-salamander-25); border-radius: var(--radii-2); padding: var(--spacing-md) var(--spacing-lg); display: flex; gap: var(--spacing-sm); align-items: flex-start; }
+.restriction-notice .icon { color: var(--secondary-salamander-100); font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+.restriction-notice p { font-size: 13px; color: var(--neutrals-night-80); line-height: 1.4; }
+
+/* Spinner */
+.spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner-dark { border-color: rgba(5,98,87,.2); border-top-color: var(--primary-cypress-100); }
+
+/* Empty / loading placeholders */
+.stripe-loading { height: 48px; background: var(--neutrals-night-5); border: 1.5px solid var(--neutrals-night-10); border-radius: var(--radii-2); display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--neutrals-night-60); font-size: 13px; }
+
+/* Utility */
+.divider { height: 1px; background: var(--neutrals-night-10); margin: 4px 0; }
+.text-sm { font-size: 13px; }
+.text-muted { color: var(--neutrals-night-60); }
+.mt-sm { margin-top: var(--spacing-sm); }
+.mt-md { margin-top: var(--spacing-md); }
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- LEFT NAV -->
+<nav id="screen-nav">
+  <div class="nav-header">
+    <h2>PRD #01</h2>
+    <p>CC Payments for Agent Debt</p>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Shared</div>
+    <button class="nav-item active" onclick="showScreen('s1','default')">
+      <span class="badge">S1</span> Earnings + Debt Overview
+    </button>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">D1 — Modal Toggle</div>
+    <button class="nav-item" onclick="showScreen('s2','cc')">
+      <span class="badge">S2</span> Modal Step 1: Method
+    </button>
+    <button class="nav-item" onclick="showScreen('s3','default')">
+      <span class="badge">S3</span> Modal Step 2: Fee Review
+    </button>
+    <button class="nav-item" onclick="showScreen('s4','default')">
+      <span class="badge">S4</span> Modal Success
+    </button>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">D2 — Guided Stepper</div>
+    <button class="nav-item" onclick="showScreen('s5','default')">
+      <span class="badge">S5</span> Step 1: Debt Summary
+    </button>
+    <button class="nav-item" onclick="showScreen('s6','cc')">
+      <span class="badge">S6</span> Step 2: Method + Card
+    </button>
+    <button class="nav-item" onclick="showScreen('s7','default')">
+      <span class="badge">S7</span> Step 3: Fee Review
+    </button>
+    <button class="nav-item" onclick="showScreen('s8','default')">
+      <span class="badge">S8</span> Step 4: Confirmation
+    </button>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Payment Plan</div>
+    <button class="nav-item" onclick="showScreen('s9','default')">
+      <span class="badge">S9</span> Installment Method Change
+    </button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="top-bar">
+    <h1 id="screen-title">S1 — Earnings: Debt Overview (modified)</h1>
+    <span class="prd-ref">PRD #01 · Stage 7 · 2026-03-24</span>
+    <div class="state-tabs" id="state-tabs"></div>
+  </div>
+
+  <div id="canvas">
+    <div class="portal-frame" id="portal-frame">
+
+      <!-- Shared portal sidebar -->
+      <div class="portal-sidebar">
+        <div class="logo"><span>ETHOS</span></div>
+        <div class="sidebar-item"><div class="icon">⌂</div><div class="label">Home</div></div>
+        <div class="sidebar-item"><div class="icon">📋</div><div class="label">Quote & App</div></div>
+        <div class="sidebar-item"><div class="icon">👥</div><div class="label">Customers</div></div>
+        <div class="sidebar-item active"><div class="icon">💰</div><div class="label">Earnings</div></div>
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-item"><div class="icon">📊</div><div class="label">Performance</div></div>
+        <div class="sidebar-item"><div class="icon">🎁</div><div class="label">Rewards</div></div>
+        <div class="sidebar-item"><div class="icon">📚</div><div class="label">Resources</div></div>
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-item"><div class="icon">🌐</div><div class="label">Share Site</div></div>
+        <div class="sidebar-item"><div class="icon">📞</div><div class="label">Contact</div></div>
+        <div class="sidebar-item"><div class="icon">🐛</div><div class="label">Report Bug</div></div>
+      </div>
+
+      <!-- Portal content area — screen rendered here -->
+      <div class="portal-content" id="portal-content">
+        <!-- injected by JS -->
+      </div>
+
+    </div><!-- /portal-frame -->
+  </div><!-- /canvas -->
+</div><!-- /main -->
+
+<script>
+// ── Screen registry ─────────────────────────────────────────────────
+const screens = {
+
+  // S1 — Earnings page with modified Debt Overview
+  s1: {
+    title: 'S1 — Earnings: Debt Overview (modified)',
+    states: ['default','empty ($0 debt)','post-payment return'],
+    render(state) {
+      const hasDebt = state !== 'empty ($0 debt)';
+      const isReturn = state === 'post-payment return';
+      const debtAmt = isReturn ? '($180.00)' : '($480.00)';
+      const personalAmt = isReturn ? '($180.00)' : '($380.00)';
+      const rolledAmt = '($0)';
+      return `
+      <div class="portal-topbar">
+        <div class="env-banner">This is the staging environment. Changes here are for testing purposes only. <button>Go to PROD</button></div>
+        <div class="notif">🔔</div>
+        <div class="avatar">P</div>
+      </div>
+      <div class="portal-page">
+        <div class="page-header">
+          <h1>Earnings of <span class="agent-select">sumit rathore (Self) ▾</span></h1>
+          <p>Monitor compensation, track chargebacks, and manage downline financial performance.</p>
+        </div>
+
+        <div class="section-label">Compensation overview <span style="font-size:13px;font-weight:400;color:var(--neutrals-night-60);margin-left:4px;">📅 Last 30 days ▾</span></div>
+        <div class="comp-cards">
+          <div class="comp-card">
+            <div class="card-icon">＋</div>
+            <div class="card-arrow">→</div>
+            <div class="card-amount">$0</div>
+            <div class="card-label">Gross Compensation</div>
+          </div>
+          <div class="comp-card">
+            <div class="card-icon" style="border-color:var(--secondary-ocean-100);color:var(--secondary-ocean-100);">－</div>
+            <div class="card-arrow">→</div>
+            <div class="card-amount blue">($0)</div>
+            <div class="card-label">Chargebacks deducted <small>(from earnings)</small></div>
+          </div>
+          <div class="comp-card">
+            <div class="card-icon" style="border-color:var(--utility-success-cypress-100);color:var(--utility-success-cypress-100);">=</div>
+            <div class="card-arrow">→</div>
+            <div class="card-amount green">$0</div>
+            <div class="card-label">Compensation Paid</div>
+          </div>
+        </div>
+
+        ${isReturn ? `<div class="alert alert-info" style="margin-bottom:var(--spacing-lg)"><div class="alert-icon">ℹ️</div><div class="alert-text"><strong>Payment received</strong>Your debt balance has been updated. Remaining: $180.00.</div></div>` : ''}
+
+        <div class="bottom-grid">
+          <div class="debt-card">
+            <div class="debt-header">
+              <h3>Debt overview</h3>
+              <div class="arrow">→</div>
+            </div>
+            <div class="debt-row">
+              <span class="debt-label bold">Outstanding Debt</span>
+              <span class="debt-amount bold">${hasDebt ? debtAmt : '($0)'}</span>
+            </div>
+            <div class="debt-row">
+              <span class="debt-label">Personal</span>
+              <span class="debt-amount">${hasDebt ? personalAmt : '($0)'}</span>
+            </div>
+            <div class="debt-row">
+              <span class="debt-label">Rolled-up from Team</span>
+              <span class="debt-amount">${rolledAmt}</span>
+            </div>
+            <div class="debt-actions">
+              ${hasDebt ? `<button class="btn btn-primary btn-sm" onclick="showScreen('s2','cc')">Pay Now</button>` : ''}
+              <button class="btn btn-secondary btn-sm">Transaction history</button>
+            </div>
+          </div>
+
+          <div class="rollup-card">
+            ${hasDebt
+              ? `<div class="rollup-icon">😟</div><h4>Outstanding debt</h4><p>You have an outstanding balance of <strong>${debtAmt}</strong>. Pay now to avoid impact on portal access.</p>`
+              : `<div class="rollup-icon">😊</div><h4>No roll-up risk!</h4><p>As you don't have any downlines there is no roll-up risk to you at the moment.</p>`
+            }
+          </div>
+        </div>
+
+        <div style="margin-top:var(--spacing-2xl)">
+          <div class="section-label">Your compensation rates</div>
+          <div style="color:var(--neutrals-night-40);font-size:13px;padding:var(--spacing-lg);background:#fff;border-radius:var(--radii-2);border:1px solid var(--neutrals-night-10)">Compensation rates table — existing content, unchanged</div>
+        </div>
+      </div>`;
+    }
+  },
+
+  // S2 — D1 Modal Step 1: Method + Card Entry
+  s2: {
+    title: 'S2 — D1 Modal Step 1: Method + Card Entry',
+    states: ['cc','ach','state restriction','stripe loading'],
+    render(state) {
+      const isCC = state === 'cc';
+      const isRestricted = state === 'state restriction';
+      const isLoading = state === 'stripe loading';
+      return `
+      <div class="portal-topbar"><div class="env-banner">Staging environment <button>Go to PROD</button></div><div class="avatar">P</div></div>
+      <div class="portal-page" style="position:relative">
+        <div style="filter:blur(2px);opacity:.4;pointer-events:none">
+          <div class="page-header"><h1>Earnings of <span class="agent-select">sumit rathore ▾</span></h1></div>
+          <div class="bottom-grid">
+            <div class="debt-card"><div class="debt-header"><h3>Debt overview</h3></div><div class="debt-row"><span class="debt-label bold">Outstanding Debt</span><span class="debt-amount bold">($480.00)</span></div></div>
+            <div class="rollup-card"><div class="rollup-icon">😟</div><h4>Outstanding debt</h4></div>
+          </div>
+        </div>
+        <div class="modal-overlay">
+          <div class="modal">
+            <div class="modal-header">
+              <div>
+                <div class="text-sm text-muted" style="margin-bottom:3px">Step 1 of 2</div>
+                <h2>Pay Debt</h2>
+              </div>
+              <button class="modal-close" onclick="showScreen('s1','default')">✕</button>
+            </div>
+            <div class="step-dots"><div class="step-dot active"></div><div class="step-dot"></div></div>
+            <div class="modal-body">
+              <div class="form-group">
+                <div class="form-label">Payment method</div>
+                <div class="method-selector">
+                  <div class="method-option ${!isCC && !isRestricted ? 'selected' : ''}" onclick="showScreen('s2','ach')">
+                    <div class="radio"></div>
+                    <div><div class="method-label">ACH</div><div class="method-sub">Bank account</div></div>
+                  </div>
+                  <div class="method-option ${isCC ? 'selected' : ''} ${isRestricted ? 'disabled' : ''}" ${!isRestricted ? `onclick="showScreen('s2','cc')"` : ''}>
+                    <div class="radio"></div>
+                    <div><div class="method-label">Credit card</div><div class="method-sub">Visa, Mastercard</div></div>
+                  </div>
+                </div>
+                ${isRestricted ? `<div class="restriction-notice"><div class="icon">⚠</div><p>Credit card payments are not available in your state. Please use ACH to continue.</p></div>` : ''}
+              </div>
+
+              ${isCC ? `
+              <div class="form-group">
+                <div class="form-label">Card number</div>
+                ${isLoading
+                  ? `<div class="stripe-loading"><div class="spinner spinner-dark"></div> Loading secure card fields…</div>`
+                  : `<div class="stripe-field"><span>4242 4242 4242 4242</span><span class="stripe-badge">Stripe</span></div>`
+                }
+              </div>
+              <div class="input-row">
+                <div class="form-group">
+                  <div class="form-label">Expiry</div>
+                  <div class="stripe-field"><span>MM / YY</span><span class="stripe-badge">Stripe</span></div>
+                </div>
+                <div class="form-group">
+                  <div class="form-label">CVV</div>
+                  <div class="stripe-field"><span>•••</span><span class="stripe-badge">Stripe</span></div>
+                </div>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-box"></div>
+                <div class="toggle-label">Save this card for future payments</div>
+              </div>
+              <div class="alert alert-info">
+                <div class="alert-icon">ℹ️</div>
+                <div class="alert-text">A processing fee applies to credit card payments. You'll see the exact amount on the next step before confirming.</div>
+              </div>
+              <div class="form-hint">⚠ Minimum credit card payment: <strong>$50.00</strong></div>
+              ` : `
+              <div class="form-group">
+                <div class="form-label">Bank account on file</div>
+                <div class="stripe-field"><span>••••••••1234 (Checking)</span></div>
+              </div>
+              <div class="form-hint">ACH payments have no additional processing fee.</div>
+              `}
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary btn-full" onclick="showScreen('s1','default')">Cancel</button>
+              <button class="btn btn-primary btn-full" onclick="showScreen('s3','default')">Continue →</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+  },
+
+  // S3 — D1 Modal Step 2: Amount + Fee Review
+  s3: {
+    title: 'S3 — D1 Modal Step 2: Amount + Fee Review',
+    states: ['default','card declined','processing'],
+    render(state) {
+      const isDeclined = state === 'card declined';
+      const isProcessing = state === 'processing';
+      return `
+      <div class="portal-topbar"><div class="env-banner">Staging environment <button>Go to PROD</button></div><div class="avatar">P</div></div>
+      <div class="portal-page" style="position:relative">
+        <div style="filter:blur(2px);opacity:.4;pointer-events:none">
+          <div class="page-header"><h1>Earnings of <span class="agent-select">sumit rathore ▾</span></h1></div>
+        </div>
+        <div class="modal-overlay">
+          <div class="modal">
+            <div class="modal-header">
+              <div>
+                <div class="text-sm text-muted" style="margin-bottom:3px">Step 2 of 2</div>
+                <h2>Review &amp; Confirm</h2>
+              </div>
+              <button class="modal-close" onclick="showScreen('s1','default')">✕</button>
+            </div>
+            <div class="step-dots"><div class="step-dot"></div><div class="step-dot active"></div></div>
+            <div class="modal-body">
+              ${isDeclined ? `<div class="alert alert-error"><div class="alert-icon">❌</div><div class="alert-text"><strong>Payment failed</strong>Your card was declined. Check your card details or try a different payment method.</div></div>` : ''}
+
+              <div class="form-group">
+                <div class="form-label">Payment amount</div>
+                <input class="form-input ${isDeclined ? 'error' : ''}" type="text" value="$480.00" />
+                <div class="form-hint">Outstanding balance: <strong>$480.00</strong> · Minimum: $50.00</div>
+              </div>
+
+              <div class="fee-breakdown">
+                <div class="fee-row">
+                  <span>Debt payment</span>
+                  <span>$480.00</span>
+                </div>
+                <div class="fee-row">
+                  <span>Processing fee <span class="fee-label-tag">Credit card</span></span>
+                  <span>$11.33</span>
+                </div>
+                <div class="fee-row total">
+                  <span>Total charged to card</span>
+                  <span>$491.33</span>
+                </div>
+              </div>
+
+              <div class="text-sm text-muted">Visa ending in 4242 · Debt reduced to $0 after payment</div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary btn-full" onclick="showScreen('s2','cc')">← Back</button>
+              <button class="btn btn-primary btn-full ${isProcessing ? 'btn-loading' : ''}" onclick="${isProcessing ? '' : "showScreen('s4','default')"}">
+                ${isProcessing ? `<div class="spinner"></div> Processing…` : 'Confirm payment'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+  },
+
+  // S4 — D1 Modal Success
+  s4: {
+    title: 'S4 — D1 Modal Success',
+    states: ['default'],
+    render(state) {
+      return `
+      <div class="portal-topbar"><div class="env-banner">Staging environment <button>Go to PROD</button></div><div class="avatar">P</div></div>
+      <div class="portal-page" style="position:relative">
+        <div style="filter:blur(2px);opacity:.4;pointer-events:none">
+          <div class="page-header"><h1>Earnings of <span class="agent-select">sumit rathore ▾</span></h1></div>
+        </div>
+        <div class="modal-overlay">
+          <div class="modal">
+            <div class="modal-body">
+              <div class="success-state">
+                <div class="success-icon">✓</div>
+                <div class="success-title">Payment confirmed</div>
+                <div class="success-sub">Your debt payment has been processed. Your balance has been updated.</div>
+                <div class="receipt-box">
+                  <div class="receipt-row"><span>Amount paid</span><span>$480.00</span></div>
+                  <div class="receipt-row"><span>Processing fee</span><span>$11.33</span></div>
+                  <div class="receipt-row total"><span>Total charged</span><span>$491.33</span></div>
+                  <div class="divider" style="margin-top:4px"></div>
+                  <div class="receipt-row"><span>Method</span><span>Visa ••••4242</span></div>
+                  <div class="receipt-row"><span>Date</span><span>Mar 24, 2026</span></div>
+                  <div class="receipt-row"><span>Remaining debt</span><span style="color:var(--utility-success-cypress-100);font-weight:700">$0.00</span></div>
+                </div>
+                <button class="btn btn-primary btn-full" onclick="showScreen('s1','post-payment return')">← Back to Earnings</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+  },
+
+  // S5 — D2 Step 1: Debt Summary
+  s5: {
+    title: 'S5 — D2 Step 1: Debt Summary',
+    states: ['default'],
+    render(state) {
+      return `
+      <div class="stepper-page">
+        <div class="stepper-back"><a href="#" onclick="showScreen('s1','default');return false">← Back to Earnings</a></div>
+        <div class="stepper-body">
+          <div class="stepper-sidebar">
+            <h3>Pay Debt</h3>
+            <div class="progress-steps">
+              <div class="progress-step current">
+                <div class="step-circle">1</div>
+                <div class="step-info"><div class="step-name">Debt summary</div><div class="step-sub">Review what you owe</div></div>
+              </div>
+              <div class="progress-step next">
+                <div class="step-circle">2</div>
+                <div class="step-info"><div class="step-name">Payment method</div></div>
+              </div>
+              <div class="progress-step next">
+                <div class="step-circle">3</div>
+                <div class="step-info"><div class="step-name">Review &amp; fee</div></div>
+              </div>
+              <div class="progress-step next">
+                <div class="step-circle">4</div>
+                <div class="step-info"><div class="step-name">Confirmation</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="stepper-content">
+            <h2>Your outstanding debt</h2>
+            <p class="step-desc">Review your outstanding balance before choosing a payment method.</p>
+            <div class="stepper-card">
+              <div class="debt-summary">
+                <div class="debt-source-row">
+                  <div class="debt-source-info">
+                    <div class="policy">Policy #ETH-2024-00412</div>
+                    <div class="reason">Chargeback — lapse after issue</div>
+                  </div>
+                  <div class="debt-source-amount">($280.00)</div>
+                </div>
+                <div class="debt-source-row">
+                  <div class="debt-source-info">
+                    <div class="policy">Policy #ETH-2024-00389</div>
+                    <div class="reason">Commission clawback — cancellation</div>
+                  </div>
+                  <div class="debt-source-amount">($200.00)</div>
+                </div>
+                <div class="debt-total-row">
+                  <div class="debt-total-label">Total outstanding</div>
+                  <div class="debt-total-amount">($480.00)</div>
+                </div>
+              </div>
+            </div>
+            <div class="stepper-nav">
+              <span></span>
+              <button class="btn btn-primary" onclick="showScreen('s6','cc')">Choose how to pay →</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+  },
+
+  // S6 — D2 Step 2: Method + Card Entry
+  s6: {
+    title: 'S6 — D2 Step 2: Method + Card Entry',
+    states: ['cc','ach','state restriction','stripe loading'],
+    render(state) {
+      const isCC = state === 'cc';
+      const isRestricted = state === 'state restriction';
+      const isLoading = state === 'stripe loading';
+      return `
+      <div class="stepper-page">
+        <div class="stepper-back"><a href="#" onclick="showScreen('s1','default');return false">← Back to Earnings</a></div>
+        <div class="stepper-body">
+          <div class="stepper-sidebar">
+            <h3>Pay Debt</h3>
+            <div class="progress-steps">
+              <div class="progress-step done">
+                <div class="step-circle">✓</div>
+                <div class="step-info"><div class="step-name">Debt summary</div></div>
+              </div>
+              <div class="progress-step current">
+                <div class="step-circle">2</div>
+                <div class="step-info"><div class="step-name">Payment method</div><div class="step-sub">Step 2 of 4</div></div>
+              </div>
+              <div class="progress-step next">
+                <div class="step-circle">3</div>
+                <div class="step-info"><div class="step-name">Review &amp; fee</div></div>
+              </div>
+              <div class="progress-step next">
+                <div class="step-circle">4</div>
+                <div class="step-info"><div class="step-name">Confirmation</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="stepper-content">
+            <h2>Choose payment method</h2>
+            <p class="step-desc">Select how you'd like to pay your outstanding debt of <strong>$480.00</strong>.</p>
+            <div class="stepper-card" style="display:flex;flex-direction:column;gap:var(--spacing-xl)">
+              <div class="form-group">
+                <div class="method-selector">
+                  <div class="method-option ${!isCC && !isRestricted ? 'selected' : ''}" onclick="showScreen('s6','ach')">
+                    <div class="radio"></div>
+                    <div><div class="method-label">ACH</div><div class="method-sub">Bank account · No fee</div></div>
+                  </div>
+                  <div class="method-option ${isCC ? 'selected' : ''} ${isRestricted ? 'disabled' : ''}" ${!isRestricted ? `onclick="showScreen('s6','cc')"` : ''}>
+                    <div class="radio"></div>
+                    <div><div class="method-label">Credit card</div><div class="method-sub">Visa, Mastercard · Fee applies</div></div>
+                  </div>
+                </div>
+                ${isRestricted ? `<div class="restriction-notice"><div class="icon">⚠</div><p><strong>Credit card not available in your state.</strong> State regulations prevent credit card surcharges in your area. Please use ACH to continue.</p></div>` : ''}
+              </div>
+
+              ${isCC ? `
+              <div class="form-group">
+                <div class="form-label">Card number</div>
+                ${isLoading ? `<div class="stripe-loading"><div class="spinner spinner-dark"></div> Loading secure fields…</div>` : `<div class="stripe-field"><span>4242 4242 4242 4242</span><span class="stripe-badge">Stripe</span></div>`}
+              </div>
+              <div class="input-row">
+                <div class="form-group"><div class="form-label">Expiry</div><div class="stripe-field"><span>MM / YY</span><span class="stripe-badge">Stripe</span></div></div>
+                <div class="form-group"><div class="form-label">CVV</div><div class="stripe-field"><span>•••</span><span class="stripe-badge">Stripe</span></div></div>
+              </div>
+              <div class="toggle-row"><div class="toggle-box"></div><div class="toggle-label">Save this card for future payments and installments</div></div>
+              <div class="alert alert-info"><div class="alert-icon">ℹ️</div><div class="alert-text">A processing fee will be shown on the next step before you confirm. Minimum CC payment: <strong>$50.00</strong>.</div></div>
+              ` : `
+              <div class="form-group">
+                <div class="form-label">Bank account on file</div>
+                <div class="stripe-field"><span>••••••••1234 (Checking)</span></div>
+                <div class="form-hint">No processing fee for ACH payments.</div>
+              </div>
+              `}
+            </div>
+            <div class="stepper-nav">
+              <button class="btn btn-secondary" onclick="showScreen('s5','default')">← Back</button>
+              <button class="btn btn-primary" onclick="showScreen('s7','default')">Continue →</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+  },
+
+  // S7 — D2 Step 3: Fee Review
+  s7: {
+    title: 'S7 — D2 Step 3: Fee Review',
+    states: ['default','processing','card declined'],
+    render(state) {
+      const isProcessing = state === 'processing';
+      const isDeclined = state === 'card declined';
+      return `
+      <div class="stepper-page">
+        <div class="stepper-back"><a href="#" onclick="showScreen('s1','default');return false">← Back to Earnings</a></div>
+        <div class="stepper-body">
+          <div class="stepper-sidebar">
+            <h3>Pay Debt</h3>
+            <div class="progress-steps">
+              <div class="progress-step done"><div class="step-circle">✓</div><div class="step-info"><div class="step-name">Debt summary</div></div></div>
+              <div class="progress-step done"><div class="step-circle">✓</div><div class="step-info"><div class="step-name">Payment method</div></div></div>
+              <div class="progress-step current"><div class="step-circle">3</div><div class="step-info"><div class="step-name">Review &amp; fee</div><div class="step-sub">Step 3 of 4</div></div></div>
+              <div class="progress-step next"><div class="step-circle">4</div><div class="step-info"><div class="step-name">Confirmation</div></div></div>
+            </div>
+          </div>
+          <div class="stepper-content">
+            <h2>Review your payment</h2>
+            <p class="step-desc">Confirm the details below before completing your payment.</p>
+            ${isDeclined ? `<div class="alert alert-error" style="margin-bottom:var(--spacing-lg)"><div class="alert-icon">❌</div><div class="alert-text"><strong>Payment failed</strong>Your card was declined. Go back to try a different card or switch to ACH.</div></div>` : ''}
+            <div class="stepper-card" style="display:flex;flex-direction:column;gap:var(--spacing-xl)">
+              <div>
+                <div class="form-label" style="margin-bottom:var(--spacing-md)">Payment summary</div>
+                <div class="fee-breakdown">
+                  <div class="fee-row"><span>Debt payment</span><span>$480.00</span></div>
+                  <div class="fee-row"><span>Processing fee <span class="fee-label-tag">Credit card</span></span><span>$11.33</span></div>
+                  <div class="fee-row total"><span>Total charged to card</span><span>$491.33</span></div>
+                </div>
+              </div>
+              <div>
+                <div class="form-label" style="margin-bottom:var(--spacing-md)">Payment method</div>
+                <div class="stripe-field"><span>Visa ending in 4242</span></div>
+              </div>
+              <div class="text-sm text-muted" style="line-height:1.6">Your outstanding debt of <strong>$480.00</strong> will be cleared after this payment. The processing fee of $11.33 is separate and does not reduce your debt balance.</div>
+            </div>
+            <div class="stepper-nav">
+              <button class="btn btn-secondary" onclick="showScreen('s6','cc')">← Back</button>
+              <button class="btn btn-primary ${isProcessing ? 'btn-loading' : ''}" onclick="${isProcessing ? '' : "showScreen('s8','default')"}">
+                ${isProcessing ? `<div class="spinner"></div> Processing…` : 'Confirm payment →'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+  },
+
+  // S8 — D2 Step 4: Confirmation
+  s8: {
+    title: 'S8 — D2 Step 4: Confirmation',
+    states: ['default'],
+    render(state) {
+      return `
+      <div class="stepper-page">
+        <div class="stepper-back"><a href="#" onclick="showScreen('s1','default');return false">← Back to Earnings</a></div>
+        <div class="stepper-body">
+          <div class="stepper-sidebar">
+            <h3>Pay Debt</h3>
+            <div class="progress-steps">
+              <div class="progress-step done"><div class="step-circle">✓</div><div class="step-info"><div class="step-name">Debt summary</div></div></div>
+              <div class="progress-step done"><div class="step-circle">✓</div><div class="step-info"><div class="step-name">Payment method</div></div></div>
+              <div class="progress-step done"><div class="step-circle">✓</div><div class="step-info"><div class="step-name">Review &amp; fee</div></div></div>
+              <div class="progress-step current"><div class="step-circle">✓</div><div class="step-info"><div class="step-name">Confirmation</div></div></div>
+            </div>
+          </div>
+          <div class="stepper-content">
+            <div class="stepper-card">
+              <div class="success-state">
+                <div class="success-icon">✓</div>
+                <div class="success-title">Payment confirmed</div>
+                <div class="success-sub">Your debt payment has been processed successfully. Your debt balance is now $0.00.</div>
+                <div class="receipt-box">
+                  <div class="receipt-row"><span>Amount paid</span><span>$480.00</span></div>
+                  <div class="receipt-row"><span>Processing fee</span><span>$11.33</span></div>
+                  <div class="receipt-row total"><span>Total charged</span><span>$491.33</span></div>
+                  <div class="divider" style="margin-top:4px"></div>
+                  <div class="receipt-row"><span>Method</span><span>Visa ••••4242</span></div>
+                  <div class="receipt-row"><span>Date</span><span>Mar 24, 2026</span></div>
+                  <div class="receipt-row"><span>Remaining balance</span><span style="color:var(--utility-success-cypress-100);font-weight:700">$0.00</span></div>
+                </div>
+                <button class="btn btn-primary btn-full" onclick="showScreen('s1','post-payment return')">← Back to Earnings</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+  },
+
+  // S9 — Payment Plan: Installment Method Change
+  s9: {
+    title: 'S9 — Payment Plan: Installment Method Change',
+    states: ['default','cc selected','saved'],
+    render(state) {
+      const isCC = state === 'cc selected' || state === 'saved';
+      const isSaved = state === 'saved';
+      return `
+      <div class="portal-topbar"><div class="env-banner">Staging environment <button>Go to PROD</button></div><div class="avatar">P</div></div>
+      <div class="portal-page">
+        <div class="page-header">
+          <h1>Earnings of <span class="agent-select">sumit rathore ▾</span></h1>
+        </div>
+        <div class="debt-card" style="max-width:600px">
+          <div class="debt-header"><h3>Active payment plan</h3></div>
+          <div style="display:flex;flex-direction:column;gap:var(--spacing-md);margin-bottom:var(--spacing-xl)">
+            <div class="debt-row"><span class="debt-label">Total debt</span><span class="debt-amount">($480.00)</span></div>
+            <div class="debt-row"><span class="debt-label">Monthly installment</span><span style="font-size:15px;font-weight:600">$120.00</span></div>
+            <div class="debt-row"><span class="debt-label">Next payment due</span><span style="font-size:15px">Apr 1, 2026</span></div>
+            <div class="debt-row"><span class="debt-label">Current method</span><span style="font-size:15px">ACH ••••1234</span></div>
+          </div>
+          <div class="divider"></div>
+          <div style="margin-top:var(--spacing-xl)">
+            <div class="form-label" style="margin-bottom:var(--spacing-md)">Change payment method for installments</div>
+            <div class="method-selector" style="margin-bottom:var(--spacing-lg)">
+              <div class="method-option ${!isCC ? 'selected' : ''}" onclick="showScreen('s9','default')"><div class="radio"></div><div><div class="method-label">ACH</div><div class="method-sub">Bank account · No fee</div></div></div>
+              <div class="method-option ${isCC ? 'selected' : ''}" onclick="showScreen('s9','cc selected')"><div class="radio"></div><div><div class="method-label">Credit card</div><div class="method-sub">Fee applies per installment</div></div></div>
+            </div>
+            ${isCC ? `
+            <div style="display:flex;flex-direction:column;gap:var(--spacing-lg)">
+              ${isSaved ? `
+              <div class="alert alert-info"><div class="alert-icon">ℹ️</div><div class="alert-text">Using saved card: <strong>Visa ••••4242</strong>. Future installments will be charged to this card.</div></div>
+              ` : `
+              <div class="form-group">
+                <div class="form-label">Card number</div>
+                <div class="stripe-field"><span>Card number</span><span class="stripe-badge">Stripe</span></div>
+              </div>
+              <div class="input-row">
+                <div class="form-group"><div class="form-label">Expiry</div><div class="stripe-field"><span>MM / YY</span><span class="stripe-badge">Stripe</span></div></div>
+                <div class="form-group"><div class="form-label">CVV</div><div class="stripe-field"><span>•••</span><span class="stripe-badge">Stripe</span></div></div>
+              </div>
+              `}
+              <div class="alert alert-warning"><div class="alert-icon">⚠️</div><div class="alert-text">A processing fee (~2.36%) applies to each installment paid by credit card. Your installment amount will not change — the fee is charged separately.</div></div>
+            </div>
+            ` : ''}
+            <div style="display:flex;gap:var(--spacing-sm);margin-top:var(--spacing-xl)">
+              <button class="btn btn-secondary">Cancel</button>
+              <button class="btn btn-primary" onclick="${isCC && !isSaved ? "showScreen('s9','saved')" : ''}">${isSaved ? '✓ Method saved' : 'Save payment method'}</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+  }
+};
+
+// ── Router ───────────────────────────────────────────────────────────
+let currentScreen = 's1';
+let currentState  = 'default';
+
+function showScreen(id, state) {
+  currentScreen = id;
+  currentState  = state || screens[id].states[0];
+
+  // Update nav
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => {
+    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(`'${id}'`)) b.classList.add('active');
+  });
+
+  // Update top bar
+  document.getElementById('screen-title').textContent = screens[id].title;
+  const tabs = document.getElementById('state-tabs');
+  tabs.innerHTML = screens[id].states.map(s =>
+    `<button class="state-tab ${s === currentState ? 'active' : ''}" onclick="showScreen('${id}','${s}')">${s}</button>`
+  ).join('');
+
+  // Render
+  document.getElementById('portal-content').innerHTML = screens[id].render(currentState);
+}
+
+// Init
+showScreen('s1', 'default');
+</script>
+</body>
+</html>
