@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D1 Modal Toggle — CC Payment Flow | Ethos Agent Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cambon:wght@700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+  <style>
+    /* ─── Design System Tokens ─────────────────────────────────────────── */
+    :root {
+      --color-sidebar-bg: #054742;
+      --color-sidebar-active-border: #f5f5f5;
+      --color-sidebar-active-bg: rgba(219, 237, 229, 0.2);
+      --color-sidebar-inactive-text: #c2c2c2;
+      --color-page-bg: #f5f5f5;
+      --color-brand-primary: #056257;
+      --color-brand-dark: #054742;
+      --color-nav-bar-border: #e9e9e9;
+      --color-white: #ffffff;
+      --color-text-primary: #272727;
+      --color-text-secondary: #525252;
+      --color-text-muted: #7e7e7e;
+      --color-text-placeholder: #a9a9a9;
+      --color-border-default: #d4d4d4;
+      --color-border-light: #e9e9e9;
+      --color-icon-bg-neutral: #f4f4f4;
+      /* Compensation cards */
+      --color-cc-gross-border: #e9e9e9;
+      --color-cc-gross-icon-bg: #f4f4f4;
+      --color-cc-chargeback-border: #deebff;
+      --color-cc-chargeback-icon-bg: #e0e9f6;
+      --color-cc-chargeback-value: #336cc3;
+      --color-cc-paid-border: #daefe3;
+      --color-cc-paid-icon-bg: #dcfae6;
+      --color-cc-paid-value: #0a9742;
+      /* Debt */
+      --color-debt-border: #fde4e2;
+      --color-debt-icon-bg: #fde4e2;
+      --color-debt-value: #ad352d;
+      --color-debt-orange: #de893a;
+      --color-progress-red: #f77870;
+      --color-progress-orange: #f7b070;
+      /* Info alert */
+      --color-info-bg: #f5f8fc;
+      --color-info-border: #336cc3;
+      --color-info-icon: #336cc3;
+      /* Fee badge */
+      --color-badge-cc-bg: #e0e9f6;
+      --color-badge-cc-text: #336cc3;
+      --color-fee-free-text: #0a9742;
+      /* Shadows */
+      --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.1);
+      --shadow-inner-card: 0 1px 2px rgba(16, 24, 40, 0.05);
+      --shadow-modal: 0 8px 32px rgba(16, 24, 40, 0.22), 0 4px 16px rgba(16, 24, 40, 0.14);
+      --shadow-btn: 0 1px 2px rgba(16, 24, 40, 0.05);
+      /* Typography */
+      --font-serif: 'Cambon', 'Georgia', serif;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      /* Layout */
+      --sidebar-width: 152px;
+      --topnav-height: 56px;
+    }
+
+    /* ─── Reset ────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: var(--font-sans); background: var(--color-page-bg); color: var(--color-text-primary); }
+    button { cursor: pointer; font-family: inherit; border: none; background: none; }
+    input { font-family: inherit; }
+    ul { list-style: none; }
+
+    /* ─── App Shell ────────────────────────────────────────────────────── */
+    .app-shell {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ─── Sidebar ──────────────────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-width);
+      min-width: var(--sidebar-width);
+      background: var(--color-sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      flex-shrink: 0;
+    }
+
+    .sidebar-brand {
+      padding: 24px 16px 8px;
+      text-align: center;
+    }
+    .sidebar-brand-name {
+      font-family: var(--font-serif);
+      font-weight: 700;
+      color: var(--color-white);
+      font-size: 13px;
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+    .sidebar-powered {
+      font-size: 8px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.1);
+      margin: 12px 0;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 68px;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.15s;
+      text-decoration: none;
+      gap: 4px;
+      border-left: 4px solid transparent;
+    }
+    .nav-item:hover {
+      background: rgba(219, 237, 229, 0.1);
+    }
+    .nav-item.active {
+      border-left: 4px solid var(--color-sidebar-active-border);
+      background: var(--color-sidebar-active-bg);
+    }
+    .nav-item.active .nav-icon,
+    .nav-item.active .nav-label {
+      color: var(--color-white);
+    }
+    .nav-icon {
+      font-size: 22px !important;
+      color: var(--color-sidebar-inactive-text);
+    }
+    .nav-label {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-sidebar-inactive-text);
+      text-align: center;
+      line-height: 1.1;
+    }
+
+    .sidebar-bottom {
+      padding-bottom: 8px;
+    }
+
+    /* ─── Main Pane ────────────────────────────────────────────────────── */
+    .main-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ─── Top Nav ──────────────────────────────────────────────────────── */
+    .top-nav {
+      height: var(--topnav-height);
+      background: var(--color-white);
+      border-bottom: 1px solid var(--color-nav-bar-border);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 32px;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+    .top-nav-icon {
+      color: var(--color-text-secondary);
+      font-size: 22px !important;
+      cursor: pointer;
+      opacity: 0.8;
+    }
+    .top-nav-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--color-brand-primary);
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* ─── Page Content ─────────────────────────────────────────────────── */
+    .page-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 40px;
+    }
+    .page-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* ─── Page Header ──────────────────────────────────────────────────── */
+    .page-header {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .breadcrumb {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+    }
+    .breadcrumb a {
+      color: var(--color-brand-primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .page-title {
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: 40px;
+      color: var(--color-text-primary);
+      line-height: 1.1;
+    }
+    .page-subtitle {
+      font-size: 16px;
+      color: var(--color-text-secondary);
+      margin-top: 4px;
+    }
+
+    /* ─── Card ─────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--color-white);
+      border-radius: 16px;
+      box-shadow: var(--shadow-card);
+    }
+
+    /* ─── Compensation Overview ─────────────────────────────────────────── */
+    .comp-card {
+      padding: 24px;
+    }
+    .comp-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .comp-card-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+    }
+    .pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid var(--color-border-default);
+      border-radius: 100px;
+      padding: 5px 12px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      background: var(--color-white);
+      cursor: pointer;
+    }
+    .pill-btn:hover { background: #fafafa; }
+
+    .stat-cards-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .stat-card {
+      border-radius: 12px;
+      border-width: 2px;
+      border-style: solid;
+      padding: 24px;
+      box-shadow: var(--shadow-inner-card);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .stat-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .stat-icon-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .stat-icon-circle .material-icons-outlined {
+      font-size: 20px !important;
+    }
+    .stat-arrow-icon {
+      color: var(--color-border-default);
+      font-size: 28px !important;
+    }
+    .stat-card-value {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 32px;
+      color: var(--color-text-primary);
+    }
+    .stat-card-label {
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      line-height: 28px;
+    }
+    .stat-label-suffix {
+      font-size: 16px;
+      font-weight: 400;
+    }
+
+    /* Gross */
+    .stat-card--gross {
+      border-color: var(--color-cc-gross-border);
+    }
+    .stat-card--gross .stat-icon-circle {
+      background: var(--color-cc-gross-icon-bg);
+      color: var(--color-text-secondary);
+    }
+
+    /* Chargeback */
+    .stat-card--chargeback {
+      border-color: var(--color-cc-chargeback-border);
+    }
+    .stat-card--chargeback .stat-icon-circle {
+      background: var(--color-cc-chargeback-icon-bg);
+      color: var(--color-cc-chargeback-value);
+    }
+    .stat-card--chargeback .stat-card-value {
+      color: var(--color-cc-chargeback-value);
+    }
+
+    /* Paid */
+    .stat-card--paid {
+      border-color: var(--color-cc-paid-border);
+    }
+    .stat-card--paid .stat-icon-circle {
+      background: var(--color-cc-paid-icon-bg);
+      color: var(--color-cc-paid-value);
+    }
+    .stat-card--paid .stat-card-value {
+      color: var(--color-cc-paid-value);
+    }
+
+    /* ─── Debt Overview ─────────────────────────────────────────────────── */
+    .debt-card-header {
+      padding: 24px 24px 0 24px;
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+    .debt-panels {
+      display: flex;
+      gap: 24px;
+      padding: 24px;
+    }
+
+    /* Left debt panel */
+    .debt-panel-left {
+      flex: 1;
+      border: 2px solid var(--color-debt-border);
+      border-radius: 12px;
+      padding: 24px;
+      background: var(--color-white);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .debt-panel-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .debt-icon-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--color-debt-icon-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .debt-icon-circle .material-icons-outlined {
+      color: var(--color-debt-value);
+      font-size: 20px !important;
+    }
+    .debt-panel-mid {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .debt-mid-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .debt-amount {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--color-debt-value);
+      letter-spacing: -0.01em;
+      line-height: 32px;
+    }
+    .debt-amount--paid {
+      color: var(--color-cc-paid-value) !important;
+    }
+    .debt-label {
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      line-height: 28px;
+    }
+
+    /* Pay now button */
+    .pay-now-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--color-white);
+      border: 1px solid var(--color-text-secondary);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--color-text-primary);
+      box-shadow: var(--shadow-btn);
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+    .pay-now-btn:hover {
+      background: #fafafa;
+      box-shadow: 0 2px 6px rgba(16,24,40,0.1);
+    }
+    .pay-now-btn .material-icons-outlined {
+      font-size: 18px !important;
+      color: var(--color-brand-primary);
+    }
+
+    .debt-breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .debt-breakdown-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .debt-breakdown-label {
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--color-text-secondary);
+    }
+    .debt-breakdown-label--dotted {
+      border-bottom: 1px dotted var(--color-text-secondary);
+      cursor: help;
+    }
+    .debt-breakdown-amount {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--color-debt-value);
+    }
+
+    /* Right debt panel */
+    .debt-panel-right {
+      width: 480px;
+      flex-shrink: 0;
+      border: 2px solid var(--color-debt-border);
+      border-radius: 12px;
+      padding: 24px;
+      background: var(--color-white);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .rollup-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .rollup-label {
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      border-bottom: 1px dotted var(--color-text-secondary);
+      cursor: help;
+    }
+    .rollup-amount {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--color-debt-value);
+      letter-spacing: -0.01em;
+    }
+
+    .progress-bar-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .progress-bar {
+      height: 32px;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+    }
+    .progress-segment {
+      height: 100%;
+    }
+    .progress-segment--red { background: var(--color-progress-red); width: 33%; }
+    .progress-segment--orange { background: var(--color-progress-orange); width: 38%; }
+    .progress-segment--grey { background: var(--color-border-default); flex: 1; }
+
+    .progress-labels {
+      display: flex;
+    }
+    .progress-label-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .progress-label-group--red { width: 33%; }
+    .progress-label-group--orange { width: 38%; }
+    .progress-label-group--grey { flex: 1; }
+    .progress-label-amount {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .progress-label-amount--red { color: var(--color-debt-value); }
+    .progress-label-amount--orange { color: var(--color-debt-orange); }
+    .progress-label-amount--grey { color: var(--color-text-secondary); }
+    .progress-label-day {
+      font-size: 12px;
+      color: var(--color-text-muted);
+    }
+
+    /* ─── Paid state override ───────────────────────────────────────────── */
+    .debt-panel-left.is-paid {
+      border-color: var(--color-cc-paid-border);
+    }
+    .debt-panel-left.is-paid .debt-icon-circle {
+      background: var(--color-cc-paid-icon-bg);
+    }
+    .debt-panel-left.is-paid .debt-icon-circle .material-icons-outlined {
+      color: var(--color-cc-paid-value);
+    }
+    .debt-panel-left.is-paid .debt-amount {
+      color: var(--color-cc-paid-value);
+    }
+    .debt-panel-left.is-paid .debt-breakdown-amount {
+      color: var(--color-cc-paid-value);
+    }
+
+    /* ─── Modal Overlay ─────────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .modal-overlay.is-open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-panel {
+      background: var(--color-white);
+      border-radius: 16px;
+      max-width: 480px;
+      width: 100%;
+      padding: 32px;
+      box-shadow: var(--shadow-modal);
+      transform: translateY(12px) scale(0.98);
+      transition: transform 0.2s;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-overlay.is-open .modal-panel {
+      transform: translateY(0) scale(1);
+    }
+
+    /* ─── Modal Header ──────────────────────────────────────────────────── */
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+    }
+    .modal-close-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-secondary);
+      transition: background 0.15s;
+    }
+    .modal-close-btn:hover { background: #f4f4f4; }
+    .modal-close-btn .material-icons-outlined { font-size: 20px !important; }
+
+    /* ─── Step Indicator ────────────────────────────────────────────────── */
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+    .step-dot {
+      height: 4px;
+      border-radius: 100px;
+      transition: width 0.25s;
+    }
+    .step-dot--active {
+      width: 24px;
+      background: var(--color-brand-primary);
+    }
+    .step-dot--inactive {
+      width: 12px;
+      background: var(--color-border-default);
+    }
+    .step-label {
+      margin-left: 6px;
+      font-size: 12px;
+      color: var(--color-text-muted);
+    }
+
+    /* ─── Form Elements ─────────────────────────────────────────────────── */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .form-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-text-muted);
+    }
+
+    /* Radio cards */
+    .radio-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .radio-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid var(--color-border-default);
+      border-radius: 8px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      background: var(--color-white);
+    }
+    .radio-card:hover {
+      border-color: #b0b0b0;
+    }
+    .radio-card.is-selected {
+      border-color: var(--color-brand-primary);
+      background: #f3f7f7;
+    }
+    .radio-circle {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--color-border-default);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: border-color 0.15s;
+    }
+    .radio-card.is-selected .radio-circle {
+      border-color: var(--color-brand-primary);
+    }
+    .radio-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-brand-primary);
+      display: none;
+    }
+    .radio-card.is-selected .radio-dot { display: block; }
+    .radio-card-label {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+
+    /* CC fields */
+    .cc-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height 0.3s ease, opacity 0.25s;
+    }
+    .cc-fields.is-visible {
+      max-height: 400px;
+      opacity: 1;
+    }
+
+    .stripe-field {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--color-border-default);
+      border-radius: 8px;
+      padding: 14px 16px;
+      background: var(--color-white);
+    }
+    .stripe-field .material-icons-outlined {
+      font-size: 18px !important;
+      color: var(--color-text-placeholder);
+    }
+    .stripe-field input {
+      border: none;
+      outline: none;
+      font-size: 15px;
+      color: var(--color-text-primary);
+      width: 100%;
+      background: transparent;
+    }
+    .stripe-field input::placeholder { color: var(--color-text-placeholder); }
+    .stripe-fields-row {
+      display: flex;
+      gap: 10px;
+    }
+    .stripe-fields-row .stripe-field { flex: 1; }
+
+    /* Toggle */
+    .save-card-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toggle-switch {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--color-border-default);
+      border-radius: 100px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: white;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.2s;
+    }
+    .toggle-switch input:checked + .toggle-slider { background: var(--color-brand-primary); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(16px); }
+    .save-card-label {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+    }
+
+    /* Info alert */
+    .info-alert {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: var(--color-info-bg);
+      border-left: 3px solid var(--color-info-border);
+      border-radius: 0 6px 6px 0;
+      padding: 12px 14px;
+      margin-bottom: 4px;
+    }
+    .info-alert .material-icons-outlined {
+      font-size: 18px !important;
+      color: var(--color-info-icon);
+      margin-top: 1px;
+      flex-shrink: 0;
+    }
+    .info-alert-text {
+      font-size: 14px;
+      color: var(--color-info-border);
+    }
+
+    /* ─── Step 2 ────────────────────────────────────────────────────────── */
+    .amount-field {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--color-brand-primary);
+      border-radius: 8px;
+      padding: 14px 16px;
+      background: var(--color-white);
+    }
+    .amount-field input {
+      border: none;
+      outline: none;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+      width: 100%;
+      background: transparent;
+    }
+    .amount-hint {
+      font-size: 14px;
+      color: var(--color-text-muted);
+      margin-top: -8px;
+      margin-bottom: 16px;
+    }
+
+    /* Fee breakdown */
+    .fee-box {
+      border: 1px solid var(--color-border-light);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .fee-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      font-size: 15px;
+      color: var(--color-text-secondary);
+      border-bottom: 1px solid var(--color-border-light);
+    }
+    .fee-row:last-child { border-bottom: none; }
+    .fee-row--total {
+      background: var(--color-icon-bg-neutral);
+      font-weight: 700;
+      color: var(--color-text-primary);
+    }
+    .fee-row-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge-cc {
+      background: var(--color-badge-cc-bg);
+      color: var(--color-badge-cc-text);
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+    }
+    .fee-amount {
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+    .fee-amount--free {
+      color: var(--color-fee-free-text);
+    }
+    .card-hint {
+      font-size: 13px;
+      color: var(--color-text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 24px;
+    }
+    .card-hint .material-icons-outlined {
+      font-size: 14px !important;
+    }
+
+    /* ─── Modal Footer ──────────────────────────────────────────────────── */
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s, opacity 0.15s;
+      border: none;
+    }
+    .btn--secondary {
+      background: var(--color-white);
+      border: 1px solid var(--color-border-default);
+      color: var(--color-text-primary);
+      box-shadow: var(--shadow-btn);
+    }
+    .btn--secondary:hover { background: #fafafa; }
+    .btn--primary {
+      background: var(--color-brand-primary);
+      color: white;
+      flex: 1;
+      justify-content: center;
+    }
+    .btn--primary:hover { background: #044f43; }
+    .btn--primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn--primary:disabled:hover { background: var(--color-brand-primary); }
+
+    /* ─── Spinner ───────────────────────────────────────────────────────── */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .is-loading .spinner { display: block; }
+    .is-loading .btn-text { display: none; }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ─── Success State ─────────────────────────────────────────────────── */
+    .success-view {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+    }
+    .success-icon-circle {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--color-cc-paid-icon-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 4px;
+    }
+    .success-icon-circle .material-icons-outlined {
+      font-size: 40px !important;
+      color: var(--color-cc-paid-value);
+    }
+    .success-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+    }
+    .success-subtitle {
+      font-size: 15px;
+      color: var(--color-text-secondary);
+      margin-top: -8px;
+    }
+    .receipt-card {
+      width: 100%;
+      border: 1px solid var(--color-border-light);
+      border-radius: 8px;
+      overflow: hidden;
+      text-align: left;
+    }
+    .receipt-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      border-bottom: 1px solid var(--color-border-light);
+    }
+    .receipt-row:last-child { border-bottom: none; }
+    .receipt-row--total {
+      background: var(--color-icon-bg-neutral);
+      font-weight: 700;
+      color: var(--color-text-primary);
+    }
+    .receipt-amount {
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+    .success-debt-status {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--color-cc-paid-value);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .success-debt-status .material-icons-outlined {
+      font-size: 18px !important;
+    }
+    .success-done-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    /* ─── Hidden utility ────────────────────────────────────────────────── */
+    .hidden { display: none !important; }
+
+    /* ─── Scrollbar (cosmetic) ──────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-name">Century Insurance Co.</div>
+      <div class="sidebar-powered">Powered by Ethos</div>
+    </div>
+    <div class="sidebar-divider"></div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="#" onclick="return false;">
+        <span class="material-icons-outlined nav-icon">home</span>
+        <span class="nav-label">Home</span>
+      </a>
+      <a class="nav-item" href="#" onclick="return false;">
+        <span class="material-icons-outlined nav-icon">description</span>
+        <span class="nav-label">Quote &amp; App</span>
+      </a>
+      <a class="nav-item" href="#" onclick="return false;">
+        <span class="material-icons-outlined nav-icon">group</span>
+        <span class="nav-label">Customers</span>
+      </a>
+      <a class="nav-item active" href="#" onclick="return false;">
+        <span class="material-icons-outlined nav-icon">account_balance_wallet</span>
+        <span class="nav-label">Earnings</span>
+      </a>
+      <a class="nav-item" href="#" onclick="return false;">
+        <span class="material-icons-outlined nav-icon">bar_chart</span>
+        <span class="nav-label">Performance</span>
+      </a>
+      <a class="nav-item" href="#" onclick="return false;">
+        <span class="material-icons-outlined nav-icon">folder_open</span>
+        <span class="nav-label">Resources</span>
+      </a>
+      <a class="nav-item" href="#" onclick="return false;">
+        <span class="material-icons-outlined nav-icon">volunteer_activism</span>
+        <span class="nav-label">Refer Agents</span>
+      </a>
+      <a class="nav-item" href="#" onclick="return false;">
+        <span class="material-icons-outlined nav-icon">share</span>
+        <span class="nav-label">Share Website</span>
+      </a>
+      <a class="nav-item" href="#" onclick="return false;">
+        <span class="material-icons-outlined nav-icon">phone</span>
+        <span class="nav-label">Contact Us</span>
+      </a>
+
+      <div class="sidebar-divider" style="margin-top:auto;"></div>
+
+      <!-- Bottom items -->
+      <div class="sidebar-bottom">
+        <a class="nav-item" href="#" onclick="return false;">
+          <span class="material-icons-outlined nav-icon">help_outline</span>
+          <span class="nav-label">FAQ</span>
+        </a>
+        <a class="nav-item" href="#" onclick="return false;">
+          <span class="material-icons-outlined nav-icon">settings</span>
+          <span class="nav-label">Settings</span>
+        </a>
+        <a class="nav-item" href="#" onclick="return false;">
+          <span class="material-icons-outlined nav-icon">logout</span>
+          <span class="nav-label">Log Out</span>
+        </a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ── Main Pane ─────────────────────────────────────────────────────── -->
+  <div class="main-pane">
+
+    <!-- Top Nav -->
+    <header class="top-nav">
+      <span class="material-icons-outlined top-nav-icon">notifications</span>
+      <span class="material-icons-outlined top-nav-icon">settings</span>
+      <div class="top-nav-avatar">P</div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="page-content">
+      <div class="page-inner">
+
+        <!-- Page Header -->
+        <div class="page-header">
+          <div class="breadcrumb">Miles / <a href="#" onclick="return false;">Alex</a></div>
+          <h1 class="page-title">Alex's Earnings</h1>
+          <p class="page-subtitle">Manage commissions, chargebacks, and debt for this agent.</p>
+        </div>
+
+        <!-- Compensation Overview Card -->
+        <div class="card comp-card">
+          <div class="comp-card-header">
+            <span class="comp-card-title">Compensation overview</span>
+            <button class="pill-btn">
+              <span class="material-icons-outlined" style="font-size:14px!important;">calendar_today</span>
+              Last 30 days
+            </button>
+          </div>
+          <div class="stat-cards-row">
+            <!-- Gross -->
+            <div class="stat-card stat-card--gross">
+              <div class="stat-card-top">
+                <div class="stat-icon-circle">
+                  <span class="material-icons-outlined">add_circle</span>
+                </div>
+                <span class="material-icons-outlined stat-arrow-icon">arrow_circle_right</span>
+              </div>
+              <div class="stat-card-value">$3,200</div>
+              <div class="stat-card-label">Gross compensation</div>
+            </div>
+            <!-- Chargebacks -->
+            <div class="stat-card stat-card--chargeback">
+              <div class="stat-card-top">
+                <div class="stat-icon-circle">
+                  <span class="material-icons-outlined">remove_circle</span>
+                </div>
+                <span class="material-icons-outlined stat-arrow-icon">arrow_circle_right</span>
+              </div>
+              <div class="stat-card-value">($300)</div>
+              <div class="stat-card-label">Chargebacks deducted <span class="stat-label-suffix">(from earnings)</span></div>
+            </div>
+            <!-- Paid -->
+            <div class="stat-card stat-card--paid">
+              <div class="stat-card-top">
+                <div class="stat-icon-circle">
+                  <span class="material-icons-outlined">drag_handle</span>
+                </div>
+                <span class="material-icons-outlined stat-arrow-icon">arrow_circle_right</span>
+              </div>
+              <div class="stat-card-value">$2,900</div>
+              <div class="stat-card-label">Compensation paid</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Debt Overview Card -->
+        <div class="card" id="debt-card">
+          <div class="debt-card-header">Debt overview</div>
+          <div class="debt-panels">
+
+            <!-- Left Panel -->
+            <div class="debt-panel-left" id="debt-panel-left">
+              <div class="debt-panel-top-row">
+                <div class="debt-icon-circle" id="debt-icon-circle">
+                  <span class="material-icons-outlined" id="debt-icon">cancel</span>
+                </div>
+                <span class="material-icons-outlined" style="color:var(--color-border-default);font-size:28px!important;">arrow_circle_right</span>
+              </div>
+              <div class="debt-panel-mid">
+                <div class="debt-mid-left">
+                  <div class="debt-amount" id="debt-amount">($1,500)</div>
+                  <div class="debt-label" id="debt-label">Outstanding debt</div>
+                </div>
+                <button class="pay-now-btn" id="pay-now-btn" onclick="openModal()">
+                  Pay now
+                  <span class="material-icons-outlined">bolt</span>
+                </button>
+              </div>
+              <div class="debt-breakdown" id="debt-breakdown">
+                <div class="debt-breakdown-row">
+                  <span class="debt-breakdown-label debt-breakdown-label--dotted" title="Your personal portion of the debt">Personal</span>
+                  <span class="debt-breakdown-amount" id="breakdown-personal">($900)</span>
+                </div>
+                <div class="debt-breakdown-row">
+                  <span class="debt-breakdown-label">Rolled-up from team</span>
+                  <span class="debt-breakdown-amount" id="breakdown-team">($600)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="debt-panel-right">
+              <div class="debt-panel-top-row">
+                <div class="debt-icon-circle">
+                  <span class="material-icons-outlined" style="color:var(--color-debt-value);">warning</span>
+                </div>
+                <span class="material-icons-outlined" style="color:var(--color-border-default);font-size:28px!important;">arrow_circle_right</span>
+              </div>
+              <div class="rollup-header">
+                <span class="rollup-label" title="Debt that could roll up to you from your downline agents">Roll-up risk to you</span>
+                <span class="rollup-amount">($21,000)</span>
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar">
+                  <div class="progress-segment progress-segment--red"></div>
+                  <div class="progress-segment progress-segment--orange"></div>
+                  <div class="progress-segment progress-segment--grey"></div>
+                </div>
+                <div class="progress-labels">
+                  <div class="progress-label-group progress-label-group--red">
+                    <span class="progress-label-amount progress-label-amount--red">($7,000)</span>
+                    <span class="progress-label-day">Due in 0–30 days</span>
+                  </div>
+                  <div class="progress-label-group progress-label-group--orange">
+                    <span class="progress-label-amount progress-label-amount--orange">($8,000)</span>
+                    <span class="progress-label-day">Due in 31–60 days</span>
+                  </div>
+                  <div class="progress-label-group progress-label-group--grey">
+                    <span class="progress-label-amount progress-label-amount--grey">($6,000)</span>
+                    <span class="progress-label-day">Due in 61–90 days</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <!-- /Debt card -->
+
+      </div>
+    </main>
+  </div><!-- /main-pane -->
+</div><!-- /app-shell -->
+
+
+<!-- ─── Modal ──────────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal-panel" onclick="event.stopPropagation()">
+
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Pay debt</span>
+      <button class="modal-close-btn" onclick="closeModal()" aria-label="Close">
+        <span class="material-icons-outlined">close</span>
+      </button>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="step-indicator" id="step-indicator">
+      <div class="step-dot step-dot--active" id="dot-1"></div>
+      <div class="step-dot step-dot--inactive" id="dot-2"></div>
+      <span class="step-label" id="step-label">Step 1 of 2</span>
+    </div>
+
+    <!-- ── Step 1 ──────────────────────────────────────────────────────── -->
+    <div id="step1-view">
+      <div class="form-group">
+        <label class="form-label">Payment method</label>
+        <div class="radio-cards">
+          <div class="radio-card is-selected" id="radio-ach" onclick="selectMethod('ach')">
+            <div class="radio-circle">
+              <div class="radio-dot"></div>
+            </div>
+            <span class="radio-card-label">ACH — bank account on file</span>
+          </div>
+          <div class="radio-card" id="radio-cc" onclick="selectMethod('cc')">
+            <div class="radio-circle">
+              <div class="radio-dot"></div>
+            </div>
+            <span class="radio-card-label">Credit card</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CC Fields (animated) -->
+      <div class="cc-fields" id="cc-fields">
+        <div class="stripe-field">
+          <span class="material-icons-outlined">lock</span>
+          <input type="text" placeholder="Card number" maxlength="19" id="card-number-input" oninput="formatCardNumber(this)" />
+        </div>
+        <div class="stripe-fields-row">
+          <div class="stripe-field">
+            <span class="material-icons-outlined">lock</span>
+            <input type="text" placeholder="MM / YY" maxlength="7" id="expiry-input" oninput="formatExpiry(this)" />
+          </div>
+          <div class="stripe-field">
+            <span class="material-icons-outlined">lock</span>
+            <input type="text" placeholder="CVV" maxlength="4" id="cvv-input" />
+          </div>
+        </div>
+        <div class="save-card-row">
+          <label class="toggle-switch">
+            <input type="checkbox" id="save-card-toggle" checked />
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="save-card-label">Save card for future payments</span>
+        </div>
+        <div class="info-alert">
+          <span class="material-icons-outlined">info</span>
+          <span class="info-alert-text">$50 minimum for credit card payments</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn--secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn--primary" id="step1-continue-btn" onclick="goToStep2()">
+          <span class="btn-text">Continue →</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Step 2 ──────────────────────────────────────────────────────── -->
+    <div id="step2-view" class="hidden">
+
+      <div class="form-group">
+        <label class="form-label" style="font-size:14px;font-weight:500;color:var(--color-text-muted);">Payment amount</label>
+        <div class="amount-field">
+          <input type="text" id="amount-input" value="$480.00" style="font-size:18px;font-weight:600;" />
+        </div>
+      </div>
+      <p class="amount-hint">Pay any amount between $50.00 and $480.00 (full balance)</p>
+
+      <div class="fee-box">
+        <div class="fee-row">
+          <span class="fee-row-left">Debt payment</span>
+          <span class="fee-amount">$480.00</span>
+        </div>
+        <div class="fee-row">
+          <span class="fee-row-left">
+            Processing fee
+            <span class="badge-cc" id="fee-badge">Credit card</span>
+          </span>
+          <span class="fee-amount" id="fee-amount">$11.33</span>
+        </div>
+        <div class="fee-row fee-row--total">
+          <span>Total charged to card</span>
+          <span id="total-amount">$491.33</span>
+        </div>
+      </div>
+
+      <div class="card-hint" id="card-hint">
+        <span class="material-icons-outlined">credit_card</span>
+        Visa ending in 4242 · Debt reduced to $0 after payment
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn--secondary" onclick="goToStep1()">← Back</button>
+        <button class="btn btn--primary" id="confirm-btn" onclick="confirmPayment()">
+          <span class="spinner"></span>
+          <span class="btn-text">Confirm payment</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Success View ────────────────────────────────────────────────── -->
+    <div id="success-view" class="hidden">
+      <div class="success-view">
+        <div class="success-icon-circle">
+          <span class="material-icons-outlined">check_circle</span>
+        </div>
+        <div class="success-title">Payment confirmed</div>
+        <div class="success-subtitle" id="success-subtitle">$480.00 applied to Alex's outstanding debt</div>
+
+        <div class="receipt-card">
+          <div class="receipt-row">
+            <span>Debt payment</span>
+            <span class="receipt-amount">$480.00</span>
+          </div>
+          <div class="receipt-row" id="receipt-fee-row">
+            <span>Processing fee</span>
+            <span class="receipt-amount" id="receipt-fee-amount">$11.33</span>
+          </div>
+          <div class="receipt-row receipt-row--total">
+            <span>Total charged</span>
+            <span id="receipt-total">$491.33</span>
+          </div>
+        </div>
+
+        <div class="success-debt-status">
+          <span class="material-icons-outlined">check_circle</span>
+          Outstanding debt: $0.00
+        </div>
+
+        <button class="btn btn--primary success-done-btn" onclick="handleDone()">Done</button>
+      </div>
+    </div>
+
+  </div><!-- /modal-panel -->
+</div><!-- /modal-overlay -->
+
+
+<script>
+  /* ─── State ─────────────────────────────────────────────────────────── */
+  let currentStep = 1;
+  let selectedMethod = 'ach'; // 'ach' | 'cc'
+
+  /* ─── Modal open / close ─────────────────────────────────────────────── */
+  function openModal() {
+    // Reset to step 1 each time
+    currentStep = 1;
+    selectedMethod = 'ach';
+    renderStep1();
+    document.getElementById('modal-overlay').classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('modal-overlay')) closeModal();
+  }
+
+  /* ─── Step rendering ─────────────────────────────────────────────────── */
+  function renderStep1() {
+    document.getElementById('step1-view').classList.remove('hidden');
+    document.getElementById('step2-view').classList.add('hidden');
+    document.getElementById('success-view').classList.add('hidden');
+    document.getElementById('step-indicator').classList.remove('hidden');
+    document.getElementById('modal-title').textContent = 'Pay debt';
+
+    // Step dots
+    document.getElementById('dot-1').className = 'step-dot step-dot--active';
+    document.getElementById('dot-2').className = 'step-dot step-dot--inactive';
+    document.getElementById('step-label').textContent = 'Step 1 of 2';
+
+    // Sync radio UI
+    syncRadioUI();
+    syncCCFields();
+  }
+
+  function renderStep2() {
+    document.getElementById('step1-view').classList.add('hidden');
+    document.getElementById('step2-view').classList.remove('hidden');
+    document.getElementById('success-view').classList.add('hidden');
+    document.getElementById('step-indicator').classList.remove('hidden');
+    document.getElementById('modal-title').textContent = 'Pay debt';
+
+    document.getElementById('dot-1').className = 'step-dot step-dot--inactive';
+    document.getElementById('dot-2').className = 'step-dot step-dot--active';
+    document.getElementById('step-label').textContent = 'Step 2 of 2';
+
+    // Update fee rows
+    const isCC = selectedMethod === 'cc';
+    const feeBadge = document.getElementById('fee-badge');
+    const feeAmount = document.getElementById('fee-amount');
+    const totalAmount = document.getElementById('total-amount');
+    const cardHint = document.getElementById('card-hint');
+    const feeRow = document.querySelector('.fee-row:nth-child(2) .fee-row-left');
+    const totalLabel = document.querySelector('.fee-row--total span:first-child');
+
+    if (isCC) {
+      feeBadge.textContent = 'Credit card';
+      feeBadge.classList.remove('hidden');
+      feeAmount.textContent = '$11.33';
+      feeAmount.className = 'fee-amount';
+      totalAmount.textContent = '$491.33';
+      totalLabel.textContent = 'Total charged to card';
+      cardHint.innerHTML = '<span class="material-icons-outlined">credit_card</span> Visa ending in 4242 · Debt reduced to $0 after payment';
+    } else {
+      feeBadge.textContent = 'ACH';
+      feeBadge.classList.remove('hidden');
+      feeAmount.textContent = '$0.00';
+      feeAmount.className = 'fee-amount fee-amount--free';
+      totalAmount.textContent = '$480.00';
+      totalLabel.textContent = 'Total charged to bank';
+      cardHint.innerHTML = '<span class="material-icons-outlined">account_balance</span> Bank account on file · Debt reduced to $0 after payment';
+    }
+
+    // Receipt
+    const receiptFeeAmount = document.getElementById('receipt-fee-amount');
+    const receiptTotal = document.getElementById('receipt-total');
+    if (isCC) {
+      receiptFeeAmount.textContent = '$11.33';
+      receiptTotal.textContent = '$491.33';
+    } else {
+      receiptFeeAmount.textContent = '$0.00';
+      receiptTotal.textContent = '$480.00';
+    }
+
+    // Success subtitle
+    const successSubtitle = document.getElementById('success-subtitle');
+    if (isCC) {
+      successSubtitle.textContent = '$491.33 charged to Visa ending in 4242';
+    } else {
+      successSubtitle.textContent = '$480.00 charged to bank account on file';
+    }
+  }
+
+  function renderSuccess() {
+    document.getElementById('step1-view').classList.add('hidden');
+    document.getElementById('step2-view').classList.add('hidden');
+    document.getElementById('success-view').classList.remove('hidden');
+    document.getElementById('step-indicator').classList.add('hidden');
+    document.getElementById('modal-title').textContent = 'Payment confirmed';
+  }
+
+  /* ─── Method selection ───────────────────────────────────────────────── */
+  function selectMethod(method) {
+    selectedMethod = method;
+    syncRadioUI();
+    syncCCFields();
+  }
+
+  function syncRadioUI() {
+    const achCard = document.getElementById('radio-ach');
+    const ccCard = document.getElementById('radio-cc');
+    if (selectedMethod === 'ach') {
+      achCard.classList.add('is-selected');
+      ccCard.classList.remove('is-selected');
+    } else {
+      achCard.classList.remove('is-selected');
+      ccCard.classList.add('is-selected');
+    }
+  }
+
+  function syncCCFields() {
+    const ccFields = document.getElementById('cc-fields');
+    if (selectedMethod === 'cc') {
+      ccFields.classList.add('is-visible');
+    } else {
+      ccFields.classList.remove('is-visible');
+    }
+  }
+
+  /* ─── Navigation ─────────────────────────────────────────────────────── */
+  function goToStep2() {
+    currentStep = 2;
+    renderStep2();
+  }
+
+  function goToStep1() {
+    currentStep = 1;
+    renderStep1();
+  }
+
+  /* ─── Confirm payment ────────────────────────────────────────────────── */
+  function confirmPayment() {
+    const btn = document.getElementById('confirm-btn');
+    btn.classList.add('is-loading');
+    btn.disabled = true;
+
+    setTimeout(() => {
+      btn.classList.remove('is-loading');
+      btn.disabled = false;
+      renderSuccess();
+    }, 1800);
+  }
+
+  /* ─── Done → close + update debt panel ──────────────────────────────── */
+  function handleDone() {
+    closeModal();
+    updateDebtToPaid();
+  }
+
+  function updateDebtToPaid() {
+    const panel = document.getElementById('debt-panel-left');
+    const icon = document.getElementById('debt-icon');
+    const amount = document.getElementById('debt-amount');
+    const label = document.getElementById('debt-label');
+    const payNowBtn = document.getElementById('pay-now-btn');
+    const breakdown = document.getElementById('debt-breakdown');
+    const breakdownPersonal = document.getElementById('breakdown-personal');
+    const breakdownTeam = document.getElementById('breakdown-team');
+
+    panel.classList.add('is-paid');
+    icon.textContent = 'check_circle';
+    amount.textContent = '$0.00';
+    amount.classList.add('debt-amount--paid');
+    label.textContent = 'Debt cleared';
+    payNowBtn.classList.add('hidden');
+    breakdownPersonal.textContent = '$0.00';
+    breakdownPersonal.style.color = 'var(--color-cc-paid-value)';
+    breakdownTeam.textContent = '$0.00';
+    breakdownTeam.style.color = 'var(--color-cc-paid-value)';
+  }
+
+  /* ─── Input formatters ───────────────────────────────────────────────── */
+  function formatCardNumber(input) {
+    let v = input.value.replace(/\D/g, '').slice(0, 16);
+    input.value = v.replace(/(.{4})/g, '$1 ').trim();
+  }
+
+  function formatExpiry(input) {
+    let v = input.value.replace(/\D/g, '').slice(0, 4);
+    if (v.length >= 3) {
+      input.value = v.slice(0, 2) + ' / ' + v.slice(2);
+    } else {
+      input.value = v;
+    }
+  }
+</script>
+
+</body>
+</html>
