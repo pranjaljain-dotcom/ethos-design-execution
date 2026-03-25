@@ -1,810 +1,703 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D1 — CC Payment Modal Toggle | Ethos Agent Portal</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
-  <style>
-    /* ── Reset ── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; overflow: hidden; }
-    body { font-family: 'Inter', system-ui, sans-serif; background: #f5f5f5; color: #272727; }
-    button { cursor: pointer; font-family: inherit; border: none; background: none; }
-    a { text-decoration: none; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alex's Earnings — D1 (Modal)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Playfair+Display:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --c-page-bg: #F5F5F5;
+  --c-sidebar: #054742;
+  --c-sidebar-active-bg: rgba(219,237,229,0.2);
+  --c-sidebar-active-border: #F5F5F5;
+  --c-sidebar-text: #C2C2C2;
+  --c-white: #FFFFFF;
+  --c-fg-default: #272727;
+  --c-fg-subtle: #525252;
+  --c-fg-subtle2: #7E7E7E;
+  --c-fg-subtle3: #A9A9A9;
+  --c-border-emphasis: #D4D4D4;
+  --c-border-subtle: #F4F4F4;
+  --c-night5: #F4F4F4;
+  --c-night10: #E9E9E9;
+  --c-night20: #D4D4D4;
+  --c-accent: #056257;
+  --c-accent-emphasis: #04463E;
+  --c-info-text: #336CC3;
+  --c-info-15: #DEEBFF;
+  --c-info-subtle3: #E0E9F6;
+  --c-success-text: #0A9742;
+  --c-success-15: #DAEFE3;
+  --c-success-100: #DCFAE6;
+  --c-error-text: #AD352D;
+  --c-error-15: #FDE4E2;
+  --c-red75: #F77870;
+  --c-orange75: #F7B070;
+  --c-orange125: #DE893A;
+  --c-notif-red: #EB5757;
+  --shadow-card: 0 1px 2px rgba(16,24,40,0.06), 0 1px 3px rgba(16,24,40,0.1);
+  --shadow-inner: 0 1px 2px rgba(16,24,40,0.05);
+  --shadow-nav: 0 2px 6px rgba(39,39,39,0.05);
+  --shadow-modal: 0 8px 32px rgba(16,24,40,0.22), 0 4px 16px rgba(16,24,40,0.14);
+  --shadow-btn: 0 1px 2px rgba(16,24,40,0.05);
+  --font-body: 'Theinhardt', 'Inter', system-ui, sans-serif;
+  --font-display: 'Cambon', 'Playfair Display', Georgia, serif;
+}
+html, body { height: 100%; font-family: var(--font-body); background: var(--c-page-bg); color: var(--c-fg-default); }
 
-    /* ── App Shell ── */
-    .app { display: flex; height: 100vh; overflow: hidden; }
+/* APP SHELL */
+.app-shell { display: flex; height: 100vh; overflow: hidden; }
 
-    /* ── Sidebar ── */
-    .sidebar {
-      width: 152px; min-width: 152px;
-      background: #054742;
-      display: flex; flex-direction: column; justify-content: space-between;
-      padding: 40px 0;
-      overflow-y: auto; flex-shrink: 0;
-    }
-    .sidebar-top { display: flex; flex-direction: column; gap: 36px; align-items: center; }
-    .sidebar-logo { text-align: center; padding: 0 12px; }
-    .sidebar-logo-name {
-      font-family: 'Playfair Display', Georgia, serif;
-      font-size: 16px; font-weight: 400;
-      color: #fff; line-height: 1.35;
-      letter-spacing: 0;
-    }
-    .sidebar-logo-sub {
-      font-size: 10px; color: rgba(255,255,255,0.5);
-      margin-top: 6px; letter-spacing: 0;
-    }
-    .sidebar-logo-sub strong { font-weight: 700; letter-spacing: 1px; }
-    .sidebar-nav { display: flex; flex-direction: column; gap: 8px; width: 100%; }
-    .sidebar-item {
-      width: 152px; min-height: 68px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 8px; padding: 8px 0;
-      cursor: pointer; transition: background 0.15s;
-    }
-    .sidebar-item.active {
-      background: rgba(219, 237, 229, 0.2);
-      border-left: 4px solid #f5f5f5;
-    }
-    .sidebar-item .si-icon {
-      font-size: 24px; color: #c2c2c2;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .sidebar-item.active .si-icon { color: #fff; }
-    .sidebar-item .si-label {
-      font-size: 10.5px; font-weight: 500;
-      color: #c2c2c2; letter-spacing: 0.84px;
-      text-transform: uppercase; text-align: center;
-      line-height: 16px;
-    }
-    .sidebar-item.active .si-label { color: #fff; }
-    .sidebar-bottom { display: flex; flex-direction: column; }
-    .sidebar-footer-item {
-      padding: 8px; text-align: center;
-      font-size: 10.5px; font-weight: 500;
-      color: #c2c2c2; letter-spacing: 0.84px;
-      text-transform: uppercase; cursor: pointer;
-      line-height: 16px;
-    }
+/* SIDEBAR */
+.sidebar {
+  width: 152px; min-width: 152px; background: var(--c-sidebar);
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 40px 0; height: 100vh; overflow-y: auto;
+}
+.sidebar-top { display: flex; flex-direction: column; }
+.sidebar-logo { padding: 0 16px; margin-bottom: 36px; }
+.sidebar-logo-name { font-family: var(--font-display); font-size: 16px; font-weight: 400; color: #fff; line-height: 1.35; }
+.sidebar-logo-powered { margin-top: 4px; font-size: 10px; color: rgba(255,255,255,0.5); letter-spacing: 1px; }
+.sidebar-logo-powered strong { font-weight: 700; }
+.nav-items { display: flex; flex-direction: column; }
+.nav-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 68px; gap: 8px; width: 152px; cursor: pointer;
+  border-left: 4px solid transparent; padding: 0 4px;
+  transition: background 0.15s;
+}
+.nav-item:hover { background: rgba(219,237,229,0.12); }
+.nav-item.active { background: var(--c-sidebar-active-bg); border-left: 4px solid var(--c-sidebar-active-border); }
+.nav-item .material-icons-outlined { font-size: 24px; color: var(--c-sidebar-text); }
+.nav-item.active .material-icons-outlined { color: #fff; }
+.nav-label { font-size: 10.5px; font-weight: 500; letter-spacing: 0.84px; text-transform: uppercase; color: var(--c-sidebar-text); text-align: center; line-height: 1.2; }
+.nav-item.active .nav-label { color: #fff; }
+.sidebar-bottom { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 8px; }
+.sidebar-bottom-link { font-size: 10.5px; font-weight: 500; letter-spacing: 0.84px; text-transform: uppercase; color: var(--c-sidebar-text); cursor: pointer; padding: 6px 8px; text-align: center; width: 100%; }
+.sidebar-bottom-link:hover { color: rgba(255,255,255,0.8); }
 
-    /* ── Main ── */
-    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+/* MAIN COLUMN */
+.main-col { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
 
-    /* ── Top Nav ── */
-    .topnav {
-      height: 56px; background: #fff;
-      box-shadow: 0 2px 6px rgba(39,39,39,0.05);
-      display: flex; align-items: center; justify-content: flex-end;
-      padding: 0 24px; gap: 32px; flex-shrink: 0; position: relative; z-index: 10;
-    }
-    .topnav-icon { position: relative; color: #9f9f9f; display: flex; align-items: center; cursor: pointer; }
-    .topnav-icon .material-icons-outlined { font-size: 24px; }
-    .topnav-badge {
-      position: absolute; top: -8px; right: -8px;
-      background: #eb5757; color: #fff;
-      font-size: 10px; font-weight: 600;
-      border-radius: 23px; padding: 0 5px;
-      min-width: 20px; height: 20px;
-      display: flex; align-items: center; justify-content: center;
-      line-height: 1;
-    }
+/* TOP NAV */
+.top-nav {
+  height: 56px; min-height: 56px; background: var(--c-white);
+  box-shadow: var(--shadow-nav); display: flex; align-items: center;
+  justify-content: flex-end; padding-right: 24px; gap: 32px; z-index: 10;
+}
+.top-nav-icon { position: relative; cursor: pointer; display: flex; align-items: center; }
+.top-nav-icon .material-icons-outlined { font-size: 24px; color: #9F9F9F; }
+.notif-badge {
+  position: absolute; top: -8px; right: -10px;
+  background: var(--c-notif-red); color: #fff; font-size: 10px; font-weight: 600;
+  height: 20px; min-width: 20px; border-radius: 23px;
+  display: flex; align-items: center; justify-content: center; padding: 0 4px;
+}
 
-    /* ── Content Area ── */
-    .content { flex: 1; overflow-y: auto; padding: 40px; background: #f5f5f5; }
-    .content-inner { max-width: 1209px; display: flex; flex-direction: column; gap: 24px; }
+/* CONTENT */
+.content-area { flex: 1; overflow-y: auto; background: var(--c-page-bg); padding: 40px; }
+.content-inner { max-width: 1209px; margin: 0 auto; }
 
-    /* ── Page Header ── */
-    .page-header { display: flex; flex-direction: column; gap: 0; margin-bottom: 16px; }
-    .breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-    .breadcrumb-link {
-      font-size: 14px; font-weight: 400; color: #04463e;
-      text-decoration: underline; text-decoration-style: solid; line-height: 20px;
-    }
-    .breadcrumb-sep { font-size: 14px; color: #7e7e7e; line-height: 20px; }
-    .page-title {
-      font-family: 'Playfair Display', Georgia, serif;
-      font-size: 43.5px; font-weight: 400;
-      color: #272727; line-height: 48px;
-      letter-spacing: -1.2px; margin-bottom: 8px;
-    }
-    .page-subtitle { font-size: 18px; font-weight: 400; color: #525252; line-height: 28px; }
+/* PAGE HEADER */
+.breadcrumb { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.breadcrumb-link { font-size: 14px; color: var(--c-accent-emphasis); text-decoration: underline solid; cursor: pointer; }
+.breadcrumb-sep { font-size: 14px; color: var(--c-fg-subtle2); }
+.page-h1 { font-family: var(--font-display); font-size: 43.5px; font-weight: 400; line-height: 48px; letter-spacing: -1.2px; color: var(--c-fg-default); margin-bottom: 8px; }
+.page-subtitle { font-size: 18px; font-weight: 400; line-height: 28px; color: var(--c-fg-subtle); margin-bottom: 32px; }
 
-    /* ── Cards (outer wrapper) ── */
-    .section-card {
-      background: #fff; border-radius: 16px;
-      box-shadow: 0 1px 2px rgba(16,24,40,0.06), 0 1px 3px rgba(16,24,40,0.1);
-      overflow: hidden;
-    }
-    .section-card-header {
-      padding: 24px 24px 0;
-      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
-    }
-    .section-card-title { font-size: 20px; font-weight: 700; color: #272727; line-height: 28px; }
-    .section-card-body { padding: 24px; }
+/* SECTION CARDS */
+.section-card { background: var(--c-white); border-radius: 16px; box-shadow: var(--shadow-card); margin-bottom: 24px; }
+.section-card-header { padding: 24px 24px 0; display: flex; align-items: center; justify-content: space-between; }
+.section-card-title { font-size: 20px; font-weight: 700; line-height: 28px; color: var(--c-fg-default); }
+.pill-btn {
+  display: flex; align-items: center; gap: 4px;
+  border: 1px solid var(--c-border-emphasis); border-radius: 6px;
+  padding: 6px 10px; font-size: 13px; font-weight: 500; color: var(--c-fg-subtle);
+  background: var(--c-white); cursor: pointer; font-family: var(--font-body);
+}
+.pill-btn .material-icons-outlined { font-size: 16px; }
 
-    /* ── Date pill ── */
-    .date-pill {
-      display: flex; align-items: center; gap: 6px;
-      padding: 4px 12px; border: 1px solid #d4d4d4;
-      border-radius: 6px; background: #fff;
-      font-size: 13px; font-weight: 500; color: #272727;
-      cursor: pointer;
-    }
-    .date-pill .material-icons-outlined { font-size: 16px; color: #525252; }
+/* COMP STAT CARDS */
+.comp-body { display: flex; gap: 24px; padding: 24px; flex-wrap: wrap; }
+.stat-card {
+  flex: 1; min-width: 260px; border-radius: 12px; border: 2px solid var(--c-night10);
+  box-shadow: var(--shadow-inner); padding: 24px; display: flex; flex-direction: column; gap: 16px;
+}
+.stat-card-top { display: flex; align-items: center; justify-content: space-between; }
+.icon-circle { width: 40px; height: 40px; border-radius: 20px; background: var(--c-night5); display: flex; align-items: center; justify-content: center; }
+.icon-circle .material-icons-outlined { font-size: 20px; color: var(--c-fg-subtle); }
+.arrow-icon .material-icons-outlined { font-size: 32px; color: var(--c-fg-subtle3); }
+.stat-value { font-size: 24px; font-weight: 700; line-height: 32px; letter-spacing: -0.24px; color: var(--c-fg-default); }
+.stat-label { font-size: 20px; font-weight: 500; line-height: 28px; color: var(--c-fg-subtle); }
+.stat-label-sub { font-size: 16px; font-weight: 400; color: var(--c-fg-subtle); }
 
-    /* ── Stat Cards ── */
-    .stat-cards { display: flex; gap: 24px; flex-wrap: wrap; }
-    .stat-card {
-      flex: 1 0 0; min-width: 260px;
-      border: 2px solid; border-radius: 12px;
-      box-shadow: 0 1px 2px rgba(16,24,40,0.05);
-      padding: 24px;
-      display: flex; flex-direction: column; gap: 16px;
-      background: #fff;
-    }
-    .stat-card-top { display: flex; align-items: center; justify-content: space-between; }
-    .stat-icon-circle {
-      width: 40px; height: 40px; border-radius: 20px;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .stat-icon-circle .material-icons-outlined { font-size: 20px; }
-    .stat-arrow { color: #9f9f9f; }
-    .stat-arrow .material-icons-outlined { font-size: 32px; }
-    .stat-card-values { display: flex; flex-direction: column; gap: 4px; }
-    .stat-value {
-      font-size: 24px; font-weight: 700;
-      letter-spacing: -0.24px; line-height: 32px;
-    }
-    .stat-label { font-size: 20px; font-weight: 500; color: #525252; line-height: 28px; }
-    .stat-sublabel { font-size: 16px; font-weight: 400; color: #525252; }
+.stat-card.info-card { border-color: var(--c-info-15); }
+.stat-card.info-card .icon-circle { background: var(--c-info-subtle3); }
+.stat-card.info-card .icon-circle .material-icons-outlined { color: var(--c-info-text); }
+.stat-card.info-card .stat-value { color: var(--c-info-text); }
+.stat-card.success-card { border-color: var(--c-success-15); }
+.stat-card.success-card .icon-circle { background: var(--c-success-100); }
+.stat-card.success-card .icon-circle .material-icons-outlined { color: var(--c-success-text); }
+.stat-card.success-card .stat-value { color: var(--c-success-text); }
 
-    /* card color variants */
-    .stat-card.neutral  { border-color: #e9e9e9; }
-    .stat-card.neutral .stat-icon-circle { background: #f4f4f4; color: #525252; }
-    .stat-card.neutral .stat-value { color: #272727; }
+/* DEBT OVERVIEW */
+.debt-body { display: flex; gap: 24px; padding: 24px; }
+.debt-left {
+  flex: 1; border: 2px solid var(--c-error-15); border-radius: 12px;
+  box-shadow: var(--shadow-inner); padding: 24px; display: flex; flex-direction: column; gap: 16px;
+  transition: border-color 0.3s;
+}
+.debt-left.paid { border-color: var(--c-success-15); }
+.debt-right {
+  width: 47%; border: 2px solid var(--c-error-15); border-radius: 12px;
+  box-shadow: var(--shadow-inner); padding: 24px; display: flex; flex-direction: column; gap: 16px;
+}
+.debt-card-top { display: flex; align-items: center; justify-content: space-between; }
+.debt-icon-circle {
+  width: 40px; height: 40px; border-radius: 20px; background: var(--c-error-15);
+  display: flex; align-items: center; justify-content: center; transition: background 0.3s;
+}
+.debt-icon-circle.paid { background: var(--c-success-100); }
+.debt-icon-circle .material-icons-outlined { font-size: 20px; color: var(--c-error-text); transition: color 0.3s; }
+.debt-icon-circle.paid .material-icons-outlined { color: var(--c-success-text); }
+.debt-value-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.debt-value-col { display: flex; flex-direction: column; gap: 2px; }
+.debt-amount { font-size: 24px; font-weight: 700; line-height: 32px; letter-spacing: -0.24px; color: var(--c-error-text); transition: color 0.3s; }
+.debt-amount.paid { color: var(--c-success-text); }
+.debt-label { font-size: 20px; font-weight: 500; line-height: 28px; color: var(--c-fg-subtle); }
+.pay-now-btn {
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid var(--c-fg-subtle); border-radius: 8px; padding: 8px 16px;
+  min-height: 36px; background: var(--c-white); font-size: 18px; font-weight: 500;
+  color: var(--c-fg-default); cursor: pointer; font-family: var(--font-body);
+  box-shadow: var(--shadow-btn); white-space: nowrap;
+}
+.pay-now-btn .material-icons-outlined { font-size: 20px; }
+.pay-now-btn:hover { background: var(--c-night5); }
+.debt-breakdown { display: flex; flex-direction: column; gap: 8px; }
+.breakdown-row { display: flex; align-items: center; justify-content: space-between; }
+.breakdown-label { font-size: 18px; font-weight: 400; line-height: 28px; color: var(--c-fg-subtle); text-decoration: underline dotted; }
+.breakdown-label.plain { text-decoration: none; }
+.breakdown-amt { font-size: 18px; font-weight: 500; color: var(--c-error-text); }
 
-    .stat-card.info { border-color: #deebff; }
-    .stat-card.info .stat-icon-circle { background: #e0e9f6; color: #336cc3; }
-    .stat-card.info .stat-value { color: #336cc3; }
+/* ROLLUP */
+.rollup-header { display: flex; align-items: center; justify-content: space-between; }
+.rollup-title { font-size: 20px; font-weight: 500; line-height: 28px; color: var(--c-fg-subtle); text-decoration: underline dotted; }
+.rollup-value { font-size: 24px; font-weight: 700; color: var(--c-error-text); letter-spacing: -0.24px; }
+.progress-bar { border-radius: 8px; overflow: hidden; height: 32px; display: flex; }
+.progress-seg { height: 100%; }
+.progress-labels { display: flex; justify-content: space-between; margin-top: 8px; }
+.plabel { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.plabel:first-child { align-items: flex-start; }
+.plabel:last-child { align-items: flex-end; }
+.plabel-amt { font-size: 16px; font-weight: 500; }
+.plabel-days { font-size: 16px; color: var(--c-fg-subtle); }
 
-    .stat-card.success { border-color: #daefe3; }
-    .stat-card.success .stat-icon-circle { background: #dcfae6; color: #0a9742; }
-    .stat-card.success .stat-value { color: #0a9742; }
+/* TABLE */
+.table-toolbar {
+  padding: 16px 24px; border-bottom: 1px solid var(--c-night10);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.toolbar-left { display: flex; align-items: center; gap: 12px; }
+.search-wrap {
+  width: 320px; height: 40px; border: 1px solid var(--c-border-emphasis);
+  border-radius: 8px; display: flex; align-items: center; padding: 0 12px; gap: 8px; background: var(--c-white);
+}
+.search-wrap .material-icons-outlined { font-size: 24px; color: var(--c-fg-subtle); flex-shrink: 0; }
+.search-wrap input { border: none; outline: none; font-size: 16px; font-weight: 400; color: var(--c-fg-subtle); font-family: var(--font-body); flex: 1; background: transparent; }
+.search-wrap input::placeholder { color: var(--c-fg-subtle); }
+.export-btn { border: 1px solid var(--c-border-emphasis); border-radius: 8px; padding: 8px 14px; font-size: 14px; font-weight: 500; color: var(--c-fg-default); background: var(--c-white); cursor: pointer; font-family: var(--font-body); }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; min-width: 1260px; border-collapse: collapse; }
+thead tr { background: var(--c-night5); border-bottom: 1px solid var(--c-night10); height: 56px; }
+th { padding: 0 16px; font-size: 14px; font-weight: 500; color: var(--c-fg-subtle); letter-spacing: -0.14px; text-align: left; border-left: 1px solid var(--c-border-subtle); white-space: nowrap; }
+th:first-child { border-left: none; width: 180px; }
+th:nth-child(2) { width: 220px; }
+th:nth-child(3) { width: 220px; }
+th:nth-child(4) { width: 220px; }
+th:nth-child(5) { width: 268px; }
+th:nth-child(6) { width: 240px; }
+.th-inner { display: flex; align-items: center; gap: 4px; }
+.th-stack { display: flex; flex-direction: column; }
+.th-sub { font-size: 10px; font-weight: 400; color: var(--c-fg-subtle); }
+tbody tr { height: 56px; border-bottom: 1px solid var(--c-border-subtle); }
+tbody tr:hover { background: #FAFAFA; }
+td { padding: 0 16px; font-size: 14px; font-weight: 400; border-left: 1px solid var(--c-border-subtle); }
+td:first-child { border-left: none; color: var(--c-fg-default); }
+.td-debt { color: var(--c-error-text); }
+.td-rollup { color: var(--c-error-text); }
+.td-gross { color: var(--c-fg-default); }
+.td-chargeback { color: var(--c-info-text); }
+.td-net { color: var(--c-success-text); }
+.pagination-row { padding: 16px; border-top: 1px solid var(--c-border-subtle); display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; }
+.pagination-left, .pagination-right { display: flex; align-items: center; gap: 8px; }
+.page-text { font-size: 14px; color: var(--c-fg-default); }
+.page-btn { border: 1px solid var(--c-border-emphasis); border-radius: 8px; background: var(--c-white); font-size: 14px; color: var(--c-fg-default); cursor: pointer; padding: 0 8px; height: 32px; min-width: 32px; display: flex; align-items: center; justify-content: center; font-family: var(--font-body); }
 
-    /* ── Debt Overview ── */
-    .debt-cols { display: flex; gap: 24px; align-items: stretch; }
-    .debt-col-left { flex: 1 0 0; min-width: 0; }
-    .debt-col-right { flex: 0 0 auto; width: 47%; }
+/* MODAL */
+.modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(16,24,40,0.4); z-index: 1000; align-items: center; justify-content: center; }
+.modal-backdrop.open { display: flex; }
+.modal { background: var(--c-white); border-radius: 16px; box-shadow: var(--shadow-modal); width: 480px; max-width: calc(100vw - 32px); max-height: calc(100vh - 48px); overflow-y: auto; display: flex; flex-direction: column; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 0; }
+.modal-title { font-size: 20px; font-weight: 700; color: var(--c-fg-default); }
+.modal-close { width: 32px; height: 32px; border-radius: 8px; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.modal-close:hover { background: var(--c-night5); }
+.modal-close .material-icons-outlined { font-size: 20px; color: var(--c-fg-subtle); }
+.modal-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+.modal-footer { padding: 0 24px 24px; display: flex; gap: 12px; }
 
-    .debt-inner-card {
-      border: 2px solid #fde4e2; border-radius: 12px;
-      box-shadow: 0 1px 2px rgba(16,24,40,0.05);
-      padding: 24px; background: #fff;
-      display: flex; flex-direction: column; gap: 16px; height: 100%;
-    }
-    .debt-card-top { display: flex; align-items: center; justify-content: space-between; }
-    .debt-icon-circle { width: 40px; height: 40px; border-radius: 20px; background: #fde4e2; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .debt-icon-circle .material-icons-outlined { font-size: 20px; color: #ad352d; }
+/* STEP DOTS */
+.step-dots { display: flex; align-items: center; gap: 4px; }
+.dot-active { width: 24px; height: 4px; border-radius: 99px; background: var(--c-accent); }
+.dot-inactive { width: 12px; height: 4px; border-radius: 99px; background: var(--c-border-emphasis); }
+.step-text { font-size: 12px; font-weight: 500; color: var(--c-fg-subtle2); margin-left: 4px; }
 
-    /* Left debt card content */
-    .debt-main-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-    .debt-value-group { display: flex; flex-direction: column; gap: 4px; }
-    .debt-value { font-size: 24px; font-weight: 700; color: #ad352d; letter-spacing: -0.24px; line-height: 32px; }
-    .debt-value-label { font-size: 20px; font-weight: 500; color: #525252; line-height: 28px; }
+/* FIELD LABEL */
+.field-label { font-size: 14px; font-weight: 500; color: var(--c-fg-subtle); }
 
-    .pay-now-btn {
-      display: flex; align-items: center; gap: 8px;
-      padding: 8px 16px; min-height: 36px;
-      border: 1px solid #525252; border-radius: 8px;
-      background: #fff; color: #272727;
-      box-shadow: 0 1px 2px rgba(16,24,40,0.05);
-      font-size: 18px; font-weight: 500; line-height: 28px;
-      cursor: pointer; white-space: nowrap; flex-shrink: 0;
-    }
-    .pay-now-btn .material-icons-outlined { font-size: 20px; }
-    .pay-now-btn:hover { background: #f5f5f5; }
+/* RADIO */
+.radio-group { display: flex; flex-direction: column; gap: 8px; }
+.radio-opt { display: flex; align-items: center; gap: 12px; border: 1px solid var(--c-border-emphasis); border-radius: 8px; padding: 14px 16px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.radio-opt:hover { border-color: var(--c-accent); }
+.radio-opt.selected { border-color: var(--c-accent); background: #F0F9F7; }
+.radio-circle { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--c-border-emphasis); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s; }
+.radio-circle.sel { border-color: var(--c-accent); }
+.radio-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c-accent); display: none; }
+.radio-circle.sel .radio-dot { display: block; }
+.radio-text-main { font-size: 15px; font-weight: 500; color: var(--c-fg-default); }
+.radio-text-sub { font-size: 13px; font-weight: 400; color: var(--c-fg-subtle); }
 
-    .debt-breakdown { display: flex; flex-direction: column; gap: 8px; }
-    .debt-row { display: flex; align-items: center; justify-content: space-between; }
-    .debt-row-label {
-      font-size: 18px; font-weight: 400; color: #525252; line-height: 28px;
-      text-decoration: underline; text-decoration-style: dotted;
-      text-decoration-skip-ink: none;
-    }
-    .debt-row-label.no-underline { text-decoration: none; }
-    .debt-row-amount { font-size: 18px; font-weight: 500; color: #ad352d; line-height: 28px; }
+/* STRIPE FIELDS */
+.stripe-fields { display: flex; flex-direction: column; gap: 8px; }
+.stripe-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.stripe-field { display: flex; align-items: center; gap: 8px; border: 1px solid var(--c-border-emphasis); border-radius: 8px; padding: 14px 16px; }
+.stripe-field .material-icons-outlined { font-size: 14px; color: var(--c-fg-subtle3); flex-shrink: 0; }
+.stripe-field input { border: none; outline: none; font-size: 14px; color: var(--c-fg-subtle3); font-family: var(--font-body); flex: 1; background: transparent; }
+.stripe-field input::placeholder { color: var(--c-fg-subtle3); }
 
-    /* Right rollup card */
-    .rollup-title-row { display: flex; align-items: center; justify-content: space-between; }
-    .rollup-title {
-      font-size: 20px; font-weight: 500; color: #525252; line-height: 28px;
-      text-decoration: underline; text-decoration-style: dotted; text-decoration-skip-ink: none;
-    }
-    .rollup-total { font-size: 24px; font-weight: 700; color: #ad352d; letter-spacing: -0.24px; line-height: 32px; }
+/* TOGGLE */
+.toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.toggle-label { font-size: 14px; color: var(--c-fg-default); }
+.toggle-sw { width: 44px; height: 24px; border-radius: 12px; background: var(--c-border-emphasis); cursor: pointer; position: relative; flex-shrink: 0; transition: background 0.2s; }
+.toggle-sw.on { background: var(--c-accent); }
+.toggle-knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: white; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+.toggle-sw.on .toggle-knob { left: 22px; }
 
-    .rollup-bar { display: flex; border-radius: 8px; overflow: hidden; height: 32px; }
-    .rollup-bar-red   { background: #f77870; width: 33.3%; }
-    .rollup-bar-orange { background: #f7b070; width: 46.7%; }
-    .rollup-bar-gray  { background: #d4d4d4; flex: 1; }
+/* INFO ALERT */
+.info-alert { background: #F5F8FC; border: 1px solid var(--c-info-15); border-radius: 8px; padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start; }
+.info-alert .material-icons-outlined { font-size: 18px; color: var(--c-info-text); flex-shrink: 0; margin-top: 1px; }
+.alert-title { font-size: 14px; font-weight: 600; color: var(--c-fg-default); }
+.alert-desc { font-size: 13px; color: var(--c-fg-subtle); }
 
-    .rollup-labels { display: flex; align-items: flex-start; justify-content: space-between; }
-    .rollup-label-col { display: flex; flex-direction: column; gap: 4px; align-items: center; flex: 1; }
-    .rollup-amount-red    { font-size: 16px; font-weight: 500; color: #ad352d; line-height: 24px; }
-    .rollup-amount-orange { font-size: 16px; font-weight: 500; color: #de893a; line-height: 24px; }
-    .rollup-amount-gray   { font-size: 16px; font-weight: 500; color: #525252; line-height: 24px; }
-    .rollup-period { font-size: 16px; font-weight: 400; color: #525252; line-height: 24px; }
+/* BUTTONS */
+.btn-primary { flex: 1; padding: 10px 20px; background: var(--c-accent); color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: var(--font-body); display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s; box-shadow: var(--shadow-btn); }
+.btn-primary:hover:not(:disabled) { background: var(--c-accent-emphasis); }
+.btn-primary:disabled { background: var(--c-border-emphasis); cursor: not-allowed; }
+.btn-outline { flex: 1; padding: 10px 20px; background: var(--c-white); color: var(--c-fg-default); border: 1.5px solid var(--c-border-emphasis); border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: var(--font-body); display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s; box-shadow: var(--shadow-btn); }
+.btn-outline:hover { background: var(--c-night5); }
+.btn-full { width: 100%; padding: 10px 20px; background: var(--c-accent); color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: var(--font-body); display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-full:hover { background: var(--c-accent-emphasis); }
 
-    /* ── "Paid" state on debt card ── */
-    .debt-value.paid { color: #0a9742; }
-    .debt-inner-card.paid { border-color: #daefe3; }
-    .debt-icon-circle.paid { background: #dcfae6; }
-    .debt-icon-circle.paid .material-icons-outlined { color: #0a9742; }
-    .debt-row-amount.paid { color: #0a9742; }
+/* AMOUNT FIELD */
+.amt-field { border: 1.5px solid var(--c-accent); border-radius: 8px; padding: 14px 16px; font-size: 16px; font-weight: 600; color: var(--c-fg-default); font-family: var(--font-body); width: 100%; outline: none; }
+.amt-hint, .note-text { font-size: 13px; color: var(--c-fg-subtle2); }
 
-    /* ── Modal overlay ── */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(16,24,40,0.4); z-index: 100;
-      align-items: center; justify-content: center;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal {
-      background: #fff; border-radius: 16px;
-      box-shadow: 0 8px 32px rgba(16,24,40,0.22), 0 4px 16px rgba(16,24,40,0.14);
-      width: 100%; max-width: 480px; margin: 24px;
-      max-height: calc(100vh - 48px); overflow-y: auto;
-      display: flex; flex-direction: column;
-    }
-    .modal-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 24px 24px 0;
-    }
-    .modal-title { font-size: 20px; font-weight: 700; color: #272727; line-height: 28px; }
-    .modal-close {
-      width: 32px; height: 32px; border-radius: 6px;
-      display: flex; align-items: center; justify-content: center;
-      color: #7e7e7e; cursor: pointer; transition: background 0.15s;
-    }
-    .modal-close:hover { background: #f4f4f4; }
-    .modal-close .material-icons-outlined { font-size: 20px; }
-    .modal-body { padding: 24px; flex: 1; }
-    .modal-footer {
-      padding: 0 24px 24px;
-      display: flex; gap: 12px;
-    }
+/* FEE TABLE */
+.fee-table { border: 1px solid var(--c-night10); border-radius: 8px; overflow: hidden; width: 100%; }
+.fee-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-top: 1px solid var(--c-night10); gap: 8px; }
+.fee-row:first-child { border-top: none; }
+.fee-row.total { background: var(--c-night5); }
+.fee-label { font-size: 15px; color: var(--c-fg-default); display: flex; align-items: center; gap: 6px; }
+.fee-amt { font-size: 15px; color: var(--c-fg-default); }
+.fee-label.bold, .fee-amt.bold { font-weight: 700; }
+.cc-badge { background: var(--c-info-subtle3); color: var(--c-info-text); font-size: 11px; font-weight: 600; border-radius: 99px; padding: 2px 8px; }
 
-    /* ── Step indicator ── */
-    .step-indicator { display: flex; align-items: center; gap: 6px; margin-bottom: 24px; }
-    .step-dot-active { height: 4px; width: 24px; border-radius: 99px; background: #056257; }
-    .step-dot-inactive { height: 4px; width: 12px; border-radius: 99px; background: #d4d4d4; }
-    .step-label { font-size: 12px; font-weight: 500; color: #7e7e7e; margin-left: 4px; }
+/* SUCCESS */
+.success-wrap { padding: 32px 24px 24px; display: flex; flex-direction: column; gap: 16px; align-items: center; text-align: center; }
+.success-circle { width: 64px; height: 64px; border-radius: 50%; background: var(--c-success-100); display: flex; align-items: center; justify-content: center; }
+.success-circle .material-icons-outlined { font-size: 32px; color: var(--c-success-text); }
+.success-title { font-size: 18px; font-weight: 700; color: var(--c-fg-default); }
+.success-sub { font-size: 14px; color: var(--c-fg-subtle); }
+.outstanding-row { display: flex; align-items: center; gap: 6px; }
+.outstanding-row .material-icons-outlined { font-size: 16px; color: var(--c-success-text); }
+.outstanding-text { font-size: 13px; font-weight: 600; color: var(--c-success-text); }
 
-    /* ── Modal form elements ── */
-    .form-group { display: flex; flex-direction: column; gap: 8px; }
-    .form-label { font-size: 14px; font-weight: 500; color: #525252; line-height: 20px; }
+/* SPINNER */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
 
-    .radio-option {
-      display: flex; align-items: flex-start; gap: 12px;
-      padding: 12px 16px; border: 1px solid #d4d4d4; border-radius: 8px;
-      background: #fff; cursor: pointer; transition: border-color 0.15s;
-    }
-    .radio-option:hover { border-color: #056257; }
-    .radio-option.selected { border-color: #056257; background: #f0f9f7; }
-    .radio-option.disabled { opacity: 0.5; cursor: not-allowed; }
-    .radio-circle {
-      width: 16px; height: 16px; border-radius: 50%;
-      border: 2px solid #d4d4d4; flex-shrink: 0; margin-top: 2px;
-      display: flex; align-items: center; justify-content: center;
-      transition: border-color 0.15s;
-    }
-    .radio-option.selected .radio-circle { border-color: #056257; }
-    .radio-dot { width: 8px; height: 8px; border-radius: 50%; background: #056257; display: none; }
-    .radio-option.selected .radio-dot { display: block; }
-    .radio-text { display: flex; flex-direction: column; gap: 2px; }
-    .radio-label { font-size: 14px; font-weight: 500; color: #272727; }
-    .radio-support { font-size: 12px; font-weight: 400; color: #7e7e7e; }
-
-    /* Stripe fields */
-    .stripe-field {
-      display: flex; align-items: center; gap: 8px;
-      padding: 14px 16px; border: 1px solid #d4d4d4; border-radius: 8px;
-      background: #fff; color: #a9a9a9; font-size: 14px;
-    }
-    .stripe-field .material-icons-outlined { font-size: 14px; color: #a9a9a9; }
-    .stripe-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-    /* Toggle */
-    .toggle-row { display: flex; align-items: center; gap: 12px; }
-    .toggle {
-      position: relative; width: 44px; height: 24px;
-      border-radius: 12px; background: #d4d4d4;
-      cursor: pointer; transition: background 0.2s; flex-shrink: 0;
-    }
-    .toggle.on { background: #056257; }
-    .toggle-knob {
-      position: absolute; top: 2px; left: 2px;
-      width: 20px; height: 20px; border-radius: 50%; background: #fff;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-      transition: transform 0.2s;
-    }
-    .toggle.on .toggle-knob { transform: translateX(20px); }
-    .toggle-label { font-size: 14px; color: #272727; }
-
-    /* Alert */
-    .alert {
-      display: flex; align-items: flex-start; gap: 12px;
-      padding: 12px 16px; border-radius: 8px; border: 1px solid;
-    }
-    .alert.info { background: #f5f8fc; border-color: #deebff; color: #272727; }
-    .alert.warning { background: #fffbf0; border-color: #f7b070; color: #272727; }
-    .alert .material-icons-outlined { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
-    .alert.info .material-icons-outlined { color: #336cc3; }
-    .alert.warning .material-icons-outlined { color: #de893a; }
-    .alert-body { display: flex; flex-direction: column; gap: 2px; }
-    .alert-title { font-size: 14px; font-weight: 600; line-height: 20px; }
-    .alert-desc { font-size: 13px; font-weight: 400; color: #525252; line-height: 18px; }
-
-    /* Step 2 — amount input */
-    .amount-input {
-      padding: 14px 16px; border: 1.5px solid #056257; border-radius: 8px;
-      background: #fff; font-size: 15px; color: #272727; font-weight: 500;
-    }
-    .amount-hint { font-size: 13px; color: #7e7e7e; line-height: 18px; }
-
-    /* Fee breakdown table */
-    .fee-table { border: 1px solid #e9e9e9; border-radius: 8px; overflow: hidden; }
-    .fee-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; }
-    .fee-row + .fee-row { border-top: 1px solid #e9e9e9; }
-    .fee-row.total { background: #f4f4f4; }
-    .fee-row-left { display: flex; align-items: center; gap: 8px; }
-    .fee-row-label { font-size: 15px; color: #272727; line-height: 22px; }
-    .fee-row.total .fee-row-label { font-weight: 700; }
-    .fee-row-value { font-size: 15px; font-weight: 600; color: #272727; }
-    .fee-row-value.free { color: #0a9742; }
-    .fee-row.total .fee-row-value { font-weight: 700; }
-
-    /* CC badge */
-    .badge-cc {
-      display: inline-flex; align-items: center;
-      padding: 2px 8px; border-radius: 99px;
-      background: #e0e9f6; color: #336cc3;
-      font-size: 11px; font-weight: 600;
-    }
-
-    /* Payment note */
-    .payment-note { font-size: 13px; color: #7e7e7e; line-height: 18px; }
-
-    /* ── Success state ── */
-    .success-body {
-      display: flex; flex-direction: column; align-items: center;
-      gap: 24px; padding: 8px 0; text-align: center;
-    }
-    .success-icon-circle {
-      width: 64px; height: 64px; border-radius: 50%;
-      background: #dcfae6; display: flex; align-items: center; justify-content: center;
-    }
-    .success-icon-circle .material-icons-outlined { font-size: 32px; color: #0a9742; }
-    .success-title { font-size: 18px; font-weight: 700; color: #272727; line-height: 26px; }
-    .success-sub { font-size: 14px; color: #525252; }
-    .success-debt-row {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 13px; font-weight: 600; color: #0a9742;
-    }
-    .success-debt-row .material-icons-outlined { font-size: 16px; }
-
-    /* ── Buttons ── */
-    .btn {
-      flex: 1; padding: 10px 20px; border-radius: 8px;
-      font-size: 15px; font-weight: 600; line-height: 22px;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      cursor: pointer; transition: opacity 0.15s, background 0.15s;
-      border: none;
-    }
-    .btn-primary { background: #056257; color: #fff; }
-    .btn-primary:hover { background: #044d44; }
-    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
-    .btn-outline { background: #fff; color: #272727; border: 1.5px solid #d4d4d4; }
-    .btn-outline:hover { background: #f4f4f4; }
-    .btn-full { flex: none; width: 100%; }
-
-    /* Spinner */
-    .spinner {
-      width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4);
-      border-top-color: #fff; border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
+.hidden { display: none !important; }
+</style>
 </head>
 <body>
-<div class="app">
+<div class="app-shell">
 
-  <!-- ── Sidebar ────────────────────────────────────── -->
+  <!-- SIDEBAR -->
   <nav class="sidebar">
     <div class="sidebar-top">
       <div class="sidebar-logo">
         <div class="sidebar-logo-name">Century<br>Insurance Co.</div>
-        <div class="sidebar-logo-sub">Powered by <strong>ETHOS</strong></div>
+        <div class="sidebar-logo-powered">Powered by <strong>ETHOS</strong></div>
       </div>
-      <div class="sidebar-nav">
-        <div class="sidebar-item">
-          <span class="material-icons-outlined si-icon">home</span>
-          <span class="si-label">Home</span>
-        </div>
-        <div class="sidebar-item">
-          <span class="material-icons-outlined si-icon">description</span>
-          <span class="si-label">Quote &amp; Application</span>
-        </div>
-        <div class="sidebar-item">
-          <span class="material-icons-outlined si-icon">groups</span>
-          <span class="si-label">Customers</span>
-        </div>
-        <div class="sidebar-item active">
-          <span class="material-icons-outlined si-icon">account_balance_wallet</span>
-          <span class="si-label">Earnings</span>
-        </div>
-        <div class="sidebar-item">
-          <span class="material-icons-outlined si-icon">leaderboard</span>
-          <span class="si-label">Performance</span>
-        </div>
-        <div class="sidebar-item">
-          <span class="material-icons-outlined si-icon">library_books</span>
-          <span class="si-label">Resources</span>
-        </div>
-        <div class="sidebar-item">
-          <span class="material-icons-outlined si-icon">person_add</span>
-          <span class="si-label">Refer Agents</span>
-        </div>
-        <div class="sidebar-item">
-          <span class="material-icons-outlined si-icon">share</span>
-          <span class="si-label">Share Website</span>
-        </div>
-        <div class="sidebar-item">
-          <span class="material-icons-outlined si-icon">call</span>
-          <span class="si-label">Contact Us</span>
-        </div>
+      <div class="nav-items">
+        <div class="nav-item"><span class="material-icons-outlined">home</span><span class="nav-label">Home</span></div>
+        <div class="nav-item"><span class="material-icons-outlined">description</span><span class="nav-label">Quote &amp; Application</span></div>
+        <div class="nav-item"><span class="material-icons-outlined">groups</span><span class="nav-label">Customers</span></div>
+        <div class="nav-item active"><span class="material-icons-outlined">account_balance_wallet</span><span class="nav-label">Earnings</span></div>
+        <div class="nav-item"><span class="material-icons-outlined">leaderboard</span><span class="nav-label">Performance</span></div>
+        <div class="nav-item"><span class="material-icons-outlined">library_books</span><span class="nav-label">Resources</span></div>
+        <div class="nav-item"><span class="material-icons-outlined">person_add</span><span class="nav-label">Refer Agents</span></div>
+        <div class="nav-item"><span class="material-icons-outlined">share</span><span class="nav-label">Share Website</span></div>
+        <div class="nav-item"><span class="material-icons-outlined">call</span><span class="nav-label">Contact Us</span></div>
       </div>
     </div>
     <div class="sidebar-bottom">
-      <div class="sidebar-footer-item">FAQ</div>
-      <div class="sidebar-footer-item">Settings</div>
-      <div class="sidebar-footer-item">Log Out</div>
+      <div class="sidebar-bottom-link">FAQ</div>
+      <div class="sidebar-bottom-link">Settings</div>
+      <div class="sidebar-bottom-link">Log Out</div>
     </div>
   </nav>
 
-  <!-- ── Main ──────────────────────────────────────── -->
-  <div class="main">
-
-    <!-- Top Nav -->
-    <header class="topnav">
-      <div class="topnav-icon">
+  <!-- MAIN COL -->
+  <div class="main-col">
+    <!-- TOP NAV -->
+    <header class="top-nav">
+      <div class="top-nav-icon">
         <span class="material-icons-outlined">notifications</span>
-        <span class="topnav-badge">32</span>
+        <div class="notif-badge">32</div>
       </div>
-      <div class="topnav-icon">
-        <span class="material-icons-outlined">forum</span>
-      </div>
-      <div class="topnav-icon">
-        <span class="material-icons-outlined">settings</span>
-      </div>
+      <div class="top-nav-icon"><span class="material-icons-outlined">forum</span></div>
+      <div class="top-nav-icon"><span class="material-icons-outlined">settings</span></div>
     </header>
 
-    <!-- Content -->
-    <main class="content">
+    <!-- CONTENT -->
+    <div class="content-area">
       <div class="content-inner">
 
-        <!-- Page Header -->
-        <div class="page-header">
-          <div class="breadcrumb">
-            <span class="breadcrumb-link">Mike</span>
-            <span class="breadcrumb-sep">/</span>
-          </div>
-          <h1 class="page-title">Alex's Earnings</h1>
-          <p class="page-subtitle">Monitor compensation, track chargebacks, and manage downline financial performance.</p>
+        <!-- PAGE HEADER -->
+        <div class="breadcrumb">
+          <span class="breadcrumb-link">Mike</span>
+          <span class="breadcrumb-sep">/</span>
         </div>
+        <h1 class="page-h1">Alex's Earnings</h1>
+        <p class="page-subtitle">Monitor compensation, track chargebacks, and manage downline financial performance.</p>
 
-        <!-- ── Compensation Overview ─────────────────── -->
+        <!-- COMPENSATION OVERVIEW -->
         <div class="section-card">
           <div class="section-card-header">
-            <span class="section-card-title">Compensation overview</span>
-            <button class="date-pill">
+            <div class="section-card-title">Compensation overview</div>
+            <button class="pill-btn">
               <span class="material-icons-outlined">calendar_today</span>
               Last 30 days
               <span class="material-icons-outlined">expand_more</span>
             </button>
           </div>
-          <div class="section-card-body">
-            <div class="stat-cards">
-              <!-- Gross -->
-              <div class="stat-card neutral">
-                <div class="stat-card-top">
-                  <div class="stat-icon-circle">
-                    <span class="material-icons-outlined">add_circle</span>
-                  </div>
-                  <div class="stat-arrow"><span class="material-icons-outlined">arrow_circle_right</span></div>
-                </div>
-                <div class="stat-card-values">
-                  <div class="stat-value" id="gross-val">$3,200</div>
-                  <div class="stat-label">Gross compensation</div>
-                </div>
+          <div class="comp-body">
+            <div class="stat-card">
+              <div class="stat-card-top">
+                <div class="icon-circle"><span class="material-icons-outlined">add_circle</span></div>
+                <div class="arrow-icon"><span class="material-icons-outlined">arrow_circle_right</span></div>
               </div>
-              <!-- Chargebacks -->
-              <div class="stat-card info">
-                <div class="stat-card-top">
-                  <div class="stat-icon-circle">
-                    <span class="material-icons-outlined">remove_circle</span>
-                  </div>
-                  <div class="stat-arrow"><span class="material-icons-outlined">arrow_circle_right</span></div>
-                </div>
-                <div class="stat-card-values">
-                  <div class="stat-value" id="chargeback-val">($300)</div>
-                  <div class="stat-label">
-                    Chargebacks deducted <span class="stat-sublabel">(from earnings)</span>
-                  </div>
-                </div>
+              <div>
+                <div class="stat-value">$3,200</div>
+                <div class="stat-label">Gross compensation</div>
               </div>
-              <!-- Comp paid -->
-              <div class="stat-card success">
-                <div class="stat-card-top">
-                  <div class="stat-icon-circle">
-                    <span class="material-icons-outlined">remove</span>
-                  </div>
-                  <div class="stat-arrow"><span class="material-icons-outlined">arrow_circle_right</span></div>
-                </div>
-                <div class="stat-card-values">
-                  <div class="stat-value" id="comp-paid-val">$2,900</div>
-                  <div class="stat-label">Compensation paid</div>
-                </div>
+            </div>
+            <div class="stat-card info-card">
+              <div class="stat-card-top">
+                <div class="icon-circle"><span class="material-icons-outlined">remove_circle</span></div>
+                <div class="arrow-icon"><span class="material-icons-outlined">arrow_circle_right</span></div>
+              </div>
+              <div>
+                <div class="stat-value">($300)</div>
+                <div class="stat-label">Chargebacks deducted</div>
+                <div class="stat-label-sub">(from earnings)</div>
+              </div>
+            </div>
+            <div class="stat-card success-card">
+              <div class="stat-card-top">
+                <div class="icon-circle"><span class="material-icons-outlined">remove</span></div>
+                <div class="arrow-icon"><span class="material-icons-outlined">arrow_circle_right</span></div>
+              </div>
+              <div>
+                <div class="stat-value">$2,900</div>
+                <div class="stat-label">Comp paid</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- ── Debt Overview ──────────────────────────── -->
+        <!-- DEBT OVERVIEW -->
         <div class="section-card">
           <div class="section-card-header">
-            <span class="section-card-title">Debt overview</span>
+            <div class="section-card-title">Debt overview</div>
           </div>
-          <div class="section-card-body">
-            <div class="debt-cols">
-
-              <!-- Left — Outstanding debt -->
-              <div class="debt-col-left">
-                <div class="debt-inner-card" id="debt-card-left">
-                  <div class="debt-card-top">
-                    <div class="debt-icon-circle" id="debt-icon-left">
-                      <span class="material-icons-outlined">error</span>
-                    </div>
-                    <div class="stat-arrow"><span class="material-icons-outlined">arrow_circle_right</span></div>
-                  </div>
-                  <div class="debt-main-row">
-                    <div class="debt-value-group">
-                      <div class="debt-value" id="debt-main-val">($1,500)</div>
-                      <div class="debt-value-label">Outstanding debt</div>
-                    </div>
-                    <button class="pay-now-btn" id="pay-now-btn" onclick="openModal()">
-                      Pay now <span class="material-icons-outlined">bolt</span>
-                    </button>
-                  </div>
-                  <div class="debt-breakdown">
-                    <div class="debt-row">
-                      <span class="debt-row-label">Personal</span>
-                      <span class="debt-row-amount" id="personal-val">($900)</span>
-                    </div>
-                    <div class="debt-row">
-                      <span class="debt-row-label no-underline">Rolled-up from team</span>
-                      <span class="debt-row-amount" id="rolledup-val">($600)</span>
-                    </div>
-                  </div>
+          <div class="debt-body">
+            <div class="debt-left" id="debtLeftCard">
+              <div class="debt-card-top">
+                <div class="debt-icon-circle" id="debtIconCircle">
+                  <span class="material-icons-outlined" id="debtGlyph">error</span>
+                </div>
+                <div class="arrow-icon"><span class="material-icons-outlined">arrow_circle_right</span></div>
+              </div>
+              <div class="debt-value-row">
+                <div class="debt-value-col">
+                  <div class="debt-amount" id="debtAmt">($1,500)</div>
+                  <div class="debt-label">Outstanding debt</div>
+                </div>
+                <button class="pay-now-btn" id="payNowBtn" onclick="openModal()">
+                  <span class="material-icons-outlined">bolt</span>
+                  Pay now
+                </button>
+              </div>
+              <div class="debt-breakdown">
+                <div class="breakdown-row">
+                  <span class="breakdown-label">Personal</span>
+                  <span class="breakdown-amt">($900)</span>
+                </div>
+                <div class="breakdown-row">
+                  <span class="breakdown-label plain">Rolled-up from team</span>
+                  <span class="breakdown-amt">($600)</span>
                 </div>
               </div>
-
-              <!-- Right — Roll-up risk -->
-              <div class="debt-col-right">
-                <div class="debt-inner-card">
-                  <div class="debt-card-top">
-                    <div class="debt-icon-circle">
-                      <span class="material-icons-outlined">warning</span>
-                    </div>
-                    <div class="stat-arrow"><span class="material-icons-outlined">arrow_circle_right</span></div>
-                  </div>
-                  <div class="rollup-title-row">
-                    <span class="rollup-title">Roll-up risk to you</span>
-                    <span class="rollup-total">($21,000)</span>
-                  </div>
-                  <div class="rollup-bar">
-                    <div class="rollup-bar-red"></div>
-                    <div class="rollup-bar-orange"></div>
-                    <div class="rollup-bar-gray"></div>
-                  </div>
-                  <div class="rollup-labels">
-                    <div class="rollup-label-col">
-                      <span class="rollup-amount-red">($7,000)</span>
-                      <span class="rollup-period">1-30 days</span>
-                    </div>
-                    <div class="rollup-label-col">
-                      <span class="rollup-amount-orange">($8,000)</span>
-                      <span class="rollup-period">31-60 days</span>
-                    </div>
-                    <div class="rollup-label-col">
-                      <span class="rollup-amount-gray">($6,000)</span>
-                      <span class="rollup-period">61+ days</span>
-                    </div>
-                  </div>
+            </div>
+            <div class="debt-right">
+              <div class="debt-card-top">
+                <div class="debt-icon-circle">
+                  <span class="material-icons-outlined">warning</span>
+                </div>
+                <div class="arrow-icon"><span class="material-icons-outlined">arrow_circle_right</span></div>
+              </div>
+              <div class="rollup-header">
+                <div class="rollup-title">Roll-up risk to you</div>
+                <div class="rollup-value">($21,000)</div>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-seg" style="background:var(--c-red75);width:33.3%"></div>
+                <div class="progress-seg" style="background:var(--c-orange75);width:46.7%"></div>
+                <div class="progress-seg" style="background:var(--c-border-emphasis);flex:1"></div>
+              </div>
+              <div class="progress-labels">
+                <div class="plabel">
+                  <span class="plabel-amt" style="color:var(--c-error-text)">($7,000)</span>
+                  <span class="plabel-days">1-30 days</span>
+                </div>
+                <div class="plabel">
+                  <span class="plabel-amt" style="color:var(--c-orange125)">($8,000)</span>
+                  <span class="plabel-days">31-60 days</span>
+                </div>
+                <div class="plabel">
+                  <span class="plabel-amt" style="color:var(--c-fg-subtle)">($6,000)</span>
+                  <span class="plabel-days">61+ days</span>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
 
-      </div><!-- /content-inner -->
-    </main>
+        <!-- DOWNLINES TABLE -->
+        <div class="section-card">
+          <div class="section-card-header" style="padding-bottom:8px">
+            <div class="section-card-title">Alex's direct downlines overview</div>
+          </div>
+          <div class="table-toolbar">
+            <div class="toolbar-left">
+              <div class="search-wrap">
+                <span class="material-icons-outlined">search</span>
+                <input type="text" placeholder="Search by agent name">
+              </div>
+              <button class="pill-btn">
+                <span class="material-icons-outlined">calendar_today</span>
+                Last 30 days
+                <span class="material-icons-outlined">expand_more</span>
+              </button>
+            </div>
+            <button class="export-btn">Export</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th><div class="th-inner">Agent name <span class="material-icons-outlined" style="font-size:16px;color:var(--c-fg-subtle3);margin-left:auto">more_vert</span></div></th>
+                  <th><div class="th-inner">↓ Outstanding debt <span class="material-icons-outlined" style="font-size:16px;color:var(--c-fg-subtle3);margin-left:auto">more_vert</span></div></th>
+                  <th><div class="th-inner">Your 30-day rollup risk <span class="material-icons-outlined" style="font-size:16px;color:var(--c-fg-subtle3);margin-left:auto">more_vert</span></div></th>
+                  <th>
+                    <div class="th-inner">
+                      <div class="th-stack"><span>Gross compensation</span><span class="th-sub">last 30 days</span></div>
+                      <span class="material-icons-outlined" style="font-size:16px;color:var(--c-fg-subtle3);margin-left:auto">more_vert</span>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="th-inner">
+                      <div class="th-stack"><span>Chargeback paid from earnings</span><span class="th-sub">last 30 days</span></div>
+                      <span class="material-icons-outlined" style="font-size:16px;color:var(--c-fg-subtle3);margin-left:auto">more_vert</span>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="th-inner">
+                      <div class="th-stack"><span>Net compensation</span><span class="th-sub">last 30 days</span></div>
+                      <span class="material-icons-outlined" style="font-size:16px;color:var(--c-fg-subtle3);margin-left:auto">more_vert</span>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Liam Parker</td><td class="td-debt">($450)</td><td class="td-rollup">($300)</td><td class="td-gross">$2,050</td><td class="td-chargeback">($300)</td><td class="td-net">$1,750</td></tr>
+                <tr><td>Ava Johnson</td><td class="td-debt">($400)</td><td class="td-rollup">($300)</td><td class="td-gross">$2,100</td><td class="td-chargeback">($400)</td><td class="td-net">$1,700</td></tr>
+                <tr><td>Ethan Davis</td><td class="td-debt">($350)</td><td class="td-rollup">($300)</td><td class="td-gross">$1,250</td><td class="td-chargeback">($500)</td><td class="td-net">$750</td></tr>
+                <tr><td>Noah Williams</td><td class="td-debt">($300)</td><td class="td-rollup">($300)</td><td class="td-gross">$2,050</td><td class="td-chargeback">($300)</td><td class="td-net">$1,750</td></tr>
+                <tr><td>Emma Thompson</td><td class="td-debt">($230)</td><td class="td-rollup">($200)</td><td class="td-gross">$2,050</td><td class="td-chargeback">($150)</td><td class="td-net">$1,900</td></tr>
+                <tr><td>Sophia Miller</td><td class="td-debt">($150)</td><td class="td-rollup">($100)</td><td class="td-gross">$1,950</td><td class="td-chargeback">($200)</td><td class="td-net">$1,750</td></tr>
+                <tr><td>Sarah Johnson</td><td class="td-debt">($120)</td><td class="td-rollup">($80)</td><td class="td-gross">$2,050</td><td class="td-chargeback">($300)</td><td class="td-net">$1,750</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination-row">
+            <div class="pagination-left">
+              <span class="page-text">Rows per page</span>
+              <button class="page-btn">10 <span class="material-icons-outlined" style="font-size:14px">expand_more</span></button>
+            </div>
+            <div class="pagination-right">
+              <span class="page-text">Showing 1–7 of 7</span>
+              <button class="page-btn">‹</button>
+              <button class="page-btn">›</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════ -->
-<!-- D1 Modal                                              -->
-<!-- ══════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="modal-overlay">
+<!-- MODAL -->
+<div class="modal-backdrop" id="backdrop" onclick="handleBackdrop(event)">
   <div class="modal" id="modal">
 
     <!-- STEP 1 -->
-    <div id="step-1">
+    <div id="s1">
       <div class="modal-header">
-        <span class="modal-title">Pay debt</span>
-        <div class="modal-close" onclick="closeModal()">
-          <span class="material-icons-outlined">close</span>
-        </div>
+        <div class="modal-title">Pay debt</div>
+        <button class="modal-close" onclick="closeModal()"><span class="material-icons-outlined">close</span></button>
       </div>
-      <div class="modal-body" style="display:flex;flex-direction:column;gap:20px;">
-        <div class="step-indicator">
-          <div class="step-dot-active"></div>
-          <div class="step-dot-inactive"></div>
-          <span class="step-label">Step 1 of 2</span>
+      <div class="modal-body">
+        <div class="step-dots">
+          <div class="dot-active"></div><div class="dot-inactive"></div>
+          <span class="step-text">Step 1 of 2</span>
         </div>
-
-        <div class="form-group">
-          <div class="form-label">Payment method</div>
-          <div class="radio-option" id="radio-ach" onclick="selectMethod('ach')">
-            <div class="radio-circle"><div class="radio-dot"></div></div>
-            <div class="radio-text">
-              <span class="radio-label">ACH — bank account on file</span>
+        <div class="field-label">Payment method</div>
+        <div class="radio-group">
+          <div class="radio-opt" id="rACH" onclick="selectMethod('ach')">
+            <div class="radio-circle" id="cACH"><div class="radio-dot"></div></div>
+            <div>
+              <div class="radio-text-main">ACH — bank account on file</div>
+              <div class="radio-text-sub">No processing fee · Clears in 1–3 business days</div>
             </div>
           </div>
-          <div class="radio-option" id="radio-cc" onclick="selectMethod('cc')">
-            <div class="radio-circle"><div class="radio-dot"></div></div>
-            <div class="radio-text">
-              <span class="radio-label">Credit card</span>
+          <div class="radio-opt" id="rCC" onclick="selectMethod('cc')">
+            <div class="radio-circle" id="cCC"><div class="radio-dot"></div></div>
+            <div>
+              <div class="radio-text-main">Credit card</div>
+              <div class="radio-text-sub">2.36% processing fee · Clears immediately</div>
             </div>
           </div>
         </div>
-
-        <div id="cc-fields" style="display:none;flex-direction:column;gap:12px;">
+        <div class="stripe-fields hidden" id="ccFields">
           <div class="stripe-field">
             <span class="material-icons-outlined">lock</span>
-            Card number
+            <input type="text" placeholder="Card number">
           </div>
           <div class="stripe-row">
-            <div class="stripe-field">
-              <span class="material-icons-outlined">lock</span>
-              MM / YY
-            </div>
-            <div class="stripe-field">
-              <span class="material-icons-outlined">lock</span>
-              CVV
-            </div>
+            <div class="stripe-field"><input type="text" placeholder="MM / YY"></div>
+            <div class="stripe-field"><input type="text" placeholder="CVV"></div>
           </div>
           <div class="toggle-row">
-            <div class="toggle" id="save-toggle" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.transform=this.classList.contains('on')?'translateX(20px)':'';">
-              <div class="toggle-knob"></div>
-            </div>
             <span class="toggle-label">Save card for future payments</span>
+            <div class="toggle-sw" id="saveTog" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
           </div>
-          <div class="alert info">
+          <div class="info-alert">
             <span class="material-icons-outlined">info</span>
-            <div class="alert-body">
-              <div class="alert-title">$50 minimum for credit card payments</div>
-              <div class="alert-desc">Pay any amount from $50.00 up to $480.00 (full balance).</div>
+            <div>
+              <div class="alert-title">Processing fee applies</div>
+              <div class="alert-desc">A 2.36% fee will be added to your payment amount for credit card transactions.</div>
             </div>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-        <button class="btn btn-primary" id="step1-continue" disabled onclick="goStep2()">Continue →</button>
+        <button class="btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary" id="s1Btn" onclick="goStep2()" disabled>Continue →</button>
       </div>
     </div>
 
     <!-- STEP 2 -->
-    <div id="step-2" style="display:none;">
+    <div id="s2" class="hidden">
       <div class="modal-header">
-        <span class="modal-title">Pay debt</span>
-        <div class="modal-close" onclick="closeModal()">
-          <span class="material-icons-outlined">close</span>
-        </div>
+        <div class="modal-title">Pay debt</div>
+        <button class="modal-close" onclick="closeModal()"><span class="material-icons-outlined">close</span></button>
       </div>
-      <div class="modal-body" style="display:flex;flex-direction:column;gap:20px;">
-        <div class="step-indicator">
-          <div class="step-dot-inactive"></div>
-          <div class="step-dot-active"></div>
-          <span class="step-label">Step 2 of 2</span>
+      <div class="modal-body">
+        <div class="step-dots">
+          <div class="dot-inactive"></div><div class="dot-active"></div>
+          <span class="step-text">Step 2 of 2</span>
         </div>
-
-        <div class="form-group">
-          <div class="form-label">Payment amount</div>
-          <div class="amount-input">$480.00</div>
-          <div class="amount-hint">Pay any amount between <strong>$50.00</strong> and <strong>$480.00</strong> (full balance)</div>
+        <div>
+          <div class="field-label" style="margin-bottom:8px">Payment amount</div>
+          <input class="amt-field" type="text" value="$480.00" readonly>
+          <p class="amt-hint" style="margin-top:6px">Pay any amount between $50.00 and $480.00 (full balance)</p>
         </div>
-
         <div class="fee-table">
           <div class="fee-row">
-            <div class="fee-row-left">
-              <span class="fee-row-label">Debt payment</span>
-            </div>
-            <span class="fee-row-value">$480.00</span>
+            <span class="fee-label">Debt payment</span>
+            <span class="fee-amt">$480.00</span>
           </div>
           <div class="fee-row">
-            <div class="fee-row-left">
-              <span class="fee-row-label">Processing fee</span>
-              <span class="badge-cc" id="cc-badge" style="display:none;">Credit card</span>
-            </div>
-            <span class="fee-row-value" id="fee-val">$0.00</span>
+            <span class="fee-label">Processing fee <span class="cc-badge hidden" id="fBadge">CC</span></span>
+            <span class="fee-amt" id="fAmt" style="color:var(--c-success-text)">$0.00</span>
           </div>
           <div class="fee-row total">
-            <div class="fee-row-left">
-              <span class="fee-row-label" id="total-label">Total charged to bank</span>
-            </div>
-            <span class="fee-row-value" id="total-val">$480.00</span>
+            <span class="fee-label bold" id="fTotalLbl">Total charged to bank</span>
+            <span class="fee-amt bold" id="fTotal">$480.00</span>
           </div>
         </div>
-
-        <div class="payment-note" id="payment-note">Bank account on file · Debt reduced to <strong style="color:#272727;">$0.00</strong> after payment</div>
+        <p class="note-text" id="fNote">Bank account on file · Debt reduced to $0.00</p>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-outline" onclick="goStep1()">← Back</button>
-        <button class="btn btn-primary" id="confirm-btn" onclick="confirmPayment()">Confirm payment</button>
+        <button class="btn-outline" onclick="goStep1()">← Back</button>
+        <button class="btn-primary" id="confirmBtn" onclick="doConfirm()">Confirm payment</button>
       </div>
     </div>
 
     <!-- SUCCESS -->
-    <div id="step-success" style="display:none;">
-      <div class="modal-body">
-        <div class="success-body">
-          <div class="success-icon-circle">
-            <span class="material-icons-outlined">check_circle</span>
+    <div id="sSuccess" class="hidden">
+      <div class="success-wrap">
+        <div class="success-circle"><span class="material-icons-outlined">check_circle</span></div>
+        <div class="success-title">Payment confirmed</div>
+        <p class="success-sub" id="sSub">$480.00 charged to bank account on file</p>
+        <div class="fee-table" style="text-align:left">
+          <div class="fee-row">
+            <span class="fee-label">Debt payment</span>
+            <span class="fee-amt">$480.00</span>
           </div>
-          <div>
-            <div class="success-title">Payment confirmed</div>
-            <div class="success-sub" id="success-sub">$491.33 charged to Visa ending in 4242</div>
+          <div class="fee-row">
+            <span class="fee-label">Processing fee <span class="cc-badge hidden" id="sBadge">CC</span></span>
+            <span class="fee-amt" id="sFeeAmt" style="color:var(--c-success-text)">$0.00</span>
           </div>
-          <div class="fee-table" style="width:100%;">
-            <div class="fee-row">
-              <span class="fee-row-label" style="font-size:13px;color:#525252;">Debt payment</span>
-              <span class="fee-row-value" style="font-size:13px;">$480.00</span>
-            </div>
-            <div class="fee-row" style="border-top:1px solid #e9e9e9;">
-              <span class="fee-row-label" style="font-size:13px;color:#525252;">Processing fee</span>
-              <span class="fee-row-value" id="success-fee-val" style="font-size:13px;">$11.33</span>
-            </div>
-            <div class="fee-row total" style="border-top:1px solid #e9e9e9;">
-              <span class="fee-row-label" style="font-size:13px;">Total charged</span>
-              <span class="fee-row-value" id="success-total-val" style="font-size:13px;">$491.33</span>
-            </div>
-          </div>
-          <div class="success-debt-row">
-            <span class="material-icons-outlined">check_circle</span>
-            Outstanding debt: $0.00
+          <div class="fee-row total">
+            <span class="fee-label bold" id="sTotalLbl">Total charged to bank</span>
+            <span class="fee-amt bold" id="sTotal">$480.00</span>
           </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-primary btn-full" onclick="handleDone()">Done</button>
+        <div class="outstanding-row">
+          <span class="material-icons-outlined">check_circle</span>
+          <span class="outstanding-text">Outstanding debt: $0.00</span>
+        </div>
+        <button class="btn-full" onclick="donePay()">Done</button>
       </div>
     </div>
 
@@ -812,110 +705,79 @@
 </div>
 
 <script>
-  const OUTSTANDING = 480.00;
-  const CC_FEE_RATE = 0.0236;
+const CC_FEE = 0.0236;
+const AMT = 480;
+let method = null;
 
-  let selectedMethod = null;
-  let isProcessing = false;
-
-  function openModal() {
-    selectedMethod = null;
-    document.getElementById('step-1').style.display = '';
-    document.getElementById('step-2').style.display = 'none';
-    document.getElementById('step-success').style.display = 'none';
-    document.getElementById('radio-ach').classList.remove('selected');
-    document.getElementById('radio-cc').classList.remove('selected');
-    document.getElementById('cc-fields').style.display = 'none';
-    document.getElementById('step1-continue').disabled = true;
-    document.getElementById('modal-overlay').classList.add('open');
-  }
-
-  function closeModal() {
-    document.getElementById('modal-overlay').classList.remove('open');
-  }
-
-  function selectMethod(m) {
-    selectedMethod = m;
-    document.getElementById('radio-ach').classList.toggle('selected', m === 'ach');
-    document.getElementById('radio-cc').classList.toggle('selected', m === 'cc');
-    document.getElementById('cc-fields').style.display = m === 'cc' ? 'flex' : 'none';
-    document.getElementById('step1-continue').disabled = false;
-  }
-
-  function goStep2() {
-    const isCC = selectedMethod === 'cc';
-    const fee = isCC ? parseFloat((OUTSTANDING * CC_FEE_RATE).toFixed(2)) : 0;
-    const total = OUTSTANDING + fee;
-
-    document.getElementById('cc-badge').style.display = isCC ? 'inline-flex' : 'none';
-    document.getElementById('fee-val').textContent = isCC ? `$${fee.toFixed(2)}` : '$0.00';
-    document.getElementById('fee-val').className = isCC ? 'fee-row-value' : 'fee-row-value free';
-    document.getElementById('total-label').textContent = isCC ? 'Total charged to card' : 'Total charged to bank';
-    document.getElementById('total-val').textContent = `$${total.toFixed(2)}`;
-    document.getElementById('payment-note').innerHTML = isCC
-      ? `Visa ending in 4242 · Debt reduced to <strong style="color:#272727;">$0.00</strong> after payment`
-      : `Bank account on file · Debt reduced to <strong style="color:#272727;">$0.00</strong> after payment`;
-
-    document.getElementById('step-1').style.display = 'none';
-    document.getElementById('step-2').style.display = '';
-  }
-
-  function goStep1() {
-    document.getElementById('step-2').style.display = 'none';
-    document.getElementById('step-1').style.display = '';
-  }
-
-  function confirmPayment() {
-    if (isProcessing) return;
-    isProcessing = true;
-    const btn = document.getElementById('confirm-btn');
-    btn.innerHTML = '<div class="spinner"></div>';
-    btn.disabled = true;
-
-    setTimeout(() => {
-      isProcessing = false;
-      const isCC = selectedMethod === 'cc';
-      const fee = isCC ? parseFloat((OUTSTANDING * CC_FEE_RATE).toFixed(2)) : 0;
-      const total = OUTSTANDING + fee;
-
-      if (isCC) {
-        document.getElementById('success-sub').textContent = `$${total.toFixed(2)} charged to Visa ending in 4242`;
-        document.getElementById('success-fee-val').textContent = `$${fee.toFixed(2)}`;
-        document.getElementById('success-total-val').textContent = `$${total.toFixed(2)}`;
-      } else {
-        document.getElementById('success-sub').textContent = `$${total.toFixed(2)} charged to bank account on file`;
-        document.getElementById('success-fee-val').textContent = '$0.00';
-        document.getElementById('success-total-val').textContent = `$${total.toFixed(2)}`;
-      }
-
-      document.getElementById('step-2').style.display = 'none';
-      document.getElementById('step-success').style.display = '';
-    }, 1800);
-  }
-
-  function handleDone() {
-    closeModal();
-    // Update UI to paid state
-    document.getElementById('debt-main-val').textContent = '$0.00';
-    document.getElementById('debt-main-val').classList.add('paid');
-    document.getElementById('personal-val').textContent = '$0.00';
-    document.getElementById('personal-val').classList.add('paid');
-    document.getElementById('rolledup-val').textContent = '$0.00';
-    document.getElementById('rolledup-val').classList.add('paid');
-    document.getElementById('debt-card-left').classList.add('paid');
-    document.getElementById('debt-icon-left').classList.add('paid');
-    document.getElementById('debt-icon-left').innerHTML = '<span class="material-icons-outlined">check_circle</span>';
-    document.getElementById('pay-now-btn').style.display = 'none';
-    // Update compensation overview
-    document.getElementById('chargeback-val').textContent = '$0';
-    document.getElementById('comp-paid-val').textContent = '$3,200';
-    document.getElementById('gross-val').textContent = '$3,200';
-  }
-
-  // Close on overlay click
-  document.getElementById('modal-overlay').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
-  });
+function openModal() {
+  method = null;
+  showStep('s1');
+  ['rACH','rCC'].forEach(id => document.getElementById(id).classList.remove('selected'));
+  ['cACH','cCC'].forEach(id => document.getElementById(id).classList.remove('sel'));
+  document.getElementById('ccFields').classList.add('hidden');
+  document.getElementById('s1Btn').disabled = true;
+  document.getElementById('backdrop').classList.add('open');
+}
+function closeModal() { document.getElementById('backdrop').classList.remove('open'); }
+function handleBackdrop(e) { if (e.target === document.getElementById('backdrop')) closeModal(); }
+function showStep(id) {
+  ['s1','s2','sSuccess'].forEach(s => document.getElementById(s).classList.toggle('hidden', s !== id));
+}
+function selectMethod(m) {
+  method = m;
+  const cc = m === 'cc';
+  document.getElementById('rACH').classList.toggle('selected', !cc);
+  document.getElementById('rCC').classList.toggle('selected', cc);
+  document.getElementById('cACH').classList.toggle('sel', !cc);
+  document.getElementById('cCC').classList.toggle('sel', cc);
+  document.getElementById('ccFields').classList.toggle('hidden', !cc);
+  document.getElementById('s1Btn').disabled = false;
+}
+function goStep2() {
+  const cc = method === 'cc';
+  const fee = cc ? Math.round(AMT * CC_FEE * 100) / 100 : 0;
+  const total = AMT + fee;
+  document.getElementById('fBadge').classList.toggle('hidden', !cc);
+  document.getElementById('fAmt').textContent = cc ? '$' + fee.toFixed(2) : '$0.00';
+  document.getElementById('fAmt').style.color = cc ? '' : 'var(--c-success-text)';
+  document.getElementById('fTotalLbl').textContent = cc ? 'Total charged to card' : 'Total charged to bank';
+  document.getElementById('fTotal').textContent = '$' + total.toFixed(2);
+  document.getElementById('fNote').textContent = cc ? 'Visa ending in 4242 · Debt reduced to $0.00' : 'Bank account on file · Debt reduced to $0.00';
+  showStep('s2');
+}
+function goStep1() { showStep('s1'); }
+function doConfirm() {
+  const btn = document.getElementById('confirmBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Processing…';
+  setTimeout(() => {
+    const cc = method === 'cc';
+    const fee = cc ? Math.round(AMT * CC_FEE * 100) / 100 : 0;
+    const total = AMT + fee;
+    document.getElementById('sSub').textContent = cc
+      ? '$' + total.toFixed(2) + ' charged to Visa ending in 4242'
+      : '$' + total.toFixed(2) + ' charged to bank account on file';
+    document.getElementById('sBadge').classList.toggle('hidden', !cc);
+    document.getElementById('sFeeAmt').textContent = cc ? '$' + fee.toFixed(2) : '$0.00';
+    document.getElementById('sFeeAmt').style.color = cc ? '' : 'var(--c-success-text)';
+    document.getElementById('sTotalLbl').textContent = cc ? 'Total charged to card' : 'Total charged to bank';
+    document.getElementById('sTotal').textContent = '$' + total.toFixed(2);
+    showStep('sSuccess');
+    btn.disabled = false;
+    btn.innerHTML = 'Confirm payment';
+  }, 1800);
+}
+function donePay() {
+  closeModal();
+  document.getElementById('debtLeftCard').classList.add('paid');
+  const a = document.getElementById('debtAmt');
+  a.textContent = '$0.00';
+  a.classList.add('paid');
+  const ic = document.getElementById('debtIconCircle');
+  ic.classList.add('paid');
+  document.getElementById('debtGlyph').textContent = 'check_circle';
+  document.getElementById('payNowBtn').classList.add('hidden');
+}
 </script>
 </body>
 </html>
